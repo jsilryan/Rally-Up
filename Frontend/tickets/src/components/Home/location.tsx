@@ -16,8 +16,8 @@ export default function Location() {
 
     // Store the latest event for each city
     sortedEvents.forEach((event) => {
-      if (!latestEventsByCity[event.city]) {
-        latestEventsByCity[event.city] = event;
+      if (!latestEventsByCity[event.location]) {
+        latestEventsByCity[event.location] = event;
       }
     });
 
@@ -53,7 +53,7 @@ export default function Location() {
             <div
               className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-1000 rounded-3xl"
               style={{
-                backgroundImage: `url(${event.cover_image})`,
+                backgroundImage: `url(${event.bannerPic})`,
                 padding: "20px",
               }}
             />
@@ -66,7 +66,7 @@ export default function Location() {
               {/* Event Details */}
               <div className="flex flex-col items-start justify-center h-full text-left space-y-4 pl-6 md:pl-10">
                 <h2 className="text-3xl md:text-4xl  font-bold text-white mb-2">
-                  Latest in {event.city}
+                  Latest in {event.location}
                 </h2>
                 <h3 className="text-xl md:text-2xl font-semibold text-white">
                   {event.name}
@@ -84,7 +84,7 @@ export default function Location() {
                   </div>
                 )}
                 <span className="text-lg md:text-xl text-[#e06c7d]">
-                  {event.ticket_details[0].price > 0 ? `Kshs. ${event.ticket_details[0].price}` : "Free"}
+                  {event.tickets[0].price > 0 ? `Kshs. ${event.tickets[0].price}` : "Free"}
                 </span>
 
                 {/* Button for viewing or purchasing ticket */}

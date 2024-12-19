@@ -33,7 +33,7 @@ const Checkout: React.FC<Props> = ({events}) => {
     if (isValidNumber) {
       alert('Thank you for your purchase!');
       // Payment logic
-
+      console.log(cart)
       clearCart()
     }
   };

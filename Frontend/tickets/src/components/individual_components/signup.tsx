@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
     const [formData, setFormData] = useState({
+        username: '',
         email: '',
         phone: '',
         firstName: '',
@@ -27,41 +28,86 @@ export default function Signup() {
     };
 
     const handleSignup = () => {
-        const { password, confirmPassword } = formData;
-
+        const { username, email, phone, firstName, lastName, password, confirmPassword } = formData;
+    
+        // Check for empty fields
+        if (!username || !email || !phone || !firstName || !lastName || !password || !confirmPassword) {
+            alert('All fields are required!');
+            return;
+        }
+    
+        // Validate username length
+        if (username.length < 8) {
+            alert('Username must be 8 characters or longer!');
+            return;
+        }
+    
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation regex
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address!');
+            return;
+        }
+    
+        // Check password match
         if (password !== confirmPassword) {
             alert('Passwords do not match!');
             return;
         }
-
+    
+        // Validate password strength
         if (!validatePassword(password)) {
             alert(
                 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
             );
             return;
         }
+    
+        console.log('Signup Details:\n', formData);
 
-        console.log('Signup Details:', formData);
+        const body = {
+            username : formData.username,
+            firstName : formData.firstName,
+            lastName : formData.lastName,
+            phone : formData.phone,
+            email : formData.email,
+            password : formData.password
+        }
 
-        // Show success popup
-        setShowPopup(true);
+        const requestOptions = {
+            method: "POST",
+            body: JSON.stringify(body)
+          }
 
-        // Redirect to "/myevents" after 3 seconds
-        setTimeout(() => {
-            setShowPopup(false);
-            navigate('/myevents');
-        }, 3000);
+          fetch("http://localhost:8080/sign_up", requestOptions)
+          .then(res => res.json())
+          .then(data => {
+                console.log(data)
+                // Show success popup
+                setShowPopup(true);
+                    
+                // Redirect to "/myevents" after 3 seconds
+                setTimeout(() => {
+                    setShowPopup(false);
+                    navigate('/myevents');
+                }, 3000);
 
-        // Clear form
-        setFormData({
-            email: '',
-            phone: '',
-            firstName: '',
-            lastName: '',
-            password: '',
-            confirmPassword: '',
-        });
+                // Clear form
+                setFormData({
+                    username: '',
+                    email: '',
+                    phone: '',
+                    firstName: '',
+                    lastName: '',
+                    password: '',
+                    confirmPassword: '',
+                });
+          })
+          .catch((err) => console.log(err));
+    
+        
     };
+    
 
     const handleGoogleSignup = () => {
         setGooglePopupVisible(true);
@@ -77,6 +123,14 @@ export default function Signup() {
                 <h2 className="text-xl font-semibold mb-4">Sign Up</h2>
 
                 {/* Input Fields */}
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    className="border w-full p-2 mb-4 rounded"
+                />
                 <input
                     type="text"
                     name="firstName"

@@ -27,7 +27,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ events, onFilteredEvents, allEven
       const filtered = events.filter(
         (event) =>
           event.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          event.city.toLowerCase().includes(locationQuery.toLowerCase())
+          event.location.toLowerCase().includes(locationQuery.toLowerCase())
       );
 
       // If no events match, pass an empty list or an appropriate message to show

@@ -12,8 +12,13 @@ import MyEvents from './Signed_In/my_events';
 import CreateEvent from './Signed_In/create_event';
 
 function Links() {
-  const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>(events);
-  const allEvents = events;
+  // Filter events with at least one ticket type having quantity > 0
+  const validEvents = events.filter(event =>
+    event.tickets.some(ticket => ticket.quantity > 0)
+  );
+
+  const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>(validEvents);
+  const allEvents = validEvents;
 
   const handleFilteredEvents = (filtered: CustomEvent[]) => {
     setFilteredEvents(filtered);

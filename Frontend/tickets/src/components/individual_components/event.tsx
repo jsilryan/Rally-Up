@@ -65,26 +65,26 @@ const EventDetails: React.FC<{ events: CustomEvent[] }> = ({ events }) => {
         </div>
 
         <h1 className="text-4xl font-bold text-secondary mb-4">{event.name}</h1>
-        <img src={event.cover_image} alt={event.name} className="w-full h-[500px] object-cover rounded-lg shadow-md mb-6" />
+        <img src={event.bannerPic} alt={event.name} className="w-full h-[500px] object-cover rounded-lg shadow-md mb-6" />
 
         <div className="bg-white shadow-xl rounded-lg p-4 m-4">
           <p className="text-secondary_dark mb-4">{event.description}</p>
-          <p className="font-semibold">Location: {event.city}, {event.country}</p>
+          <p className="font-semibold">Location: {event.location}</p>
           <p className="font-semibold">Date: {new Date(event.date).toLocaleDateString()} at {event.time}</p>
 
-          {event.ticket_details.map((ticket) => {
+          {event.tickets.map((ticket) => {
             // Find the current event in the cart
             const existingEvent = cart.find((item) => String(item.eventId) === String(event.id));
 
             return (
-              <div key={ticket.type} className="flex items-center justify-between mt-4">
-                <span>{ticket.type} - Kshs. {ticket.price}</span>
+              <div key={ticket.name} className="flex items-center justify-between mt-4">
+                <span>{ticket.name} - Kshs. {ticket.price}</span>
                 <div className="flex items-center space-x-2">
-                  <button onClick={() => addToCart(ticket.type, ticket.price)} className="text-green-500">
+                  <button onClick={() => addToCart(ticket.name, ticket.price)} className="text-green-500">
                     <IoMdAddCircle className="text-xl" />
                   </button>
-                  <span>{existingEvent?.tickets[ticket.type]?.count || 0}</span>
-                  <button onClick={() => removeFromCart(ticket.type)} className="text-red-500">
+                  <span>{existingEvent?.tickets[ticket.name]?.count || 0}</span>
+                  <button onClick={() => removeFromCart(ticket.name)} className="text-red-500">
                     <IoMdRemoveCircle className="text-xl" />
                   </button>
                 </div>

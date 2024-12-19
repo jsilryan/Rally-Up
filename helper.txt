@@ -4,3 +4,15 @@ https://www.ticketmaster.com/
 https://www.meetup.com/
 https://www.eventbrite.com/d/kenya--nairobi/events/
 https://www.ticketsasa.com/events/
+
+Links:
+GET - /generate_qr
+GET - /events
+GET - /events/{event_id}
+POST - /generate_ticket
+POST - /add_event
+PATCH - /update_event
+DELETE - /delete_event
+POST - /upload
+POST - /sign_up
+POST - /login

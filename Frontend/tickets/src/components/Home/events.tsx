@@ -71,7 +71,7 @@ const Events: React.FC<EventsProps> = ({ events, showLocation, searchQuery }) =>
                 className="hover:cursor-pointer bg-white shadow-md rounded-lg overflow-hidden transform transition duration-500 hover:scale-105"
               >
                 <img
-                  src={event.cover_image}
+                  src={event.bannerPic}
                   alt={event.name}
                   className="w-full h-40 object-cover"
                 />
@@ -80,7 +80,7 @@ const Events: React.FC<EventsProps> = ({ events, showLocation, searchQuery }) =>
                     {event.name}
                   </h3>
                   <p className="text-gray-600">
-                    {event.city}, {event.country}
+                    {event.location}
                   </p>
                   <p className="text-gray-500 text-sm">
                     {new Date(event.date).toLocaleDateString()} at {event.time}
