@@ -10,7 +10,7 @@ export const navLinks = [
       id: "login",
       title: "Login",
       link: "/login"
-  },
+    },
 ]
 
 // Define the name for event data

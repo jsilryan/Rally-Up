@@ -10,6 +10,7 @@ import Signup from './individual_components/signup';
 import Login from './individual_components/login';
 import MyEvents from './Signed_In/my_events';
 import CreateEvent from './Signed_In/create_event';
+import ProtectedRoute from './individual_components/protectedRoute';
 
 function Links() {
   // Filter events with at least one ticket type having quantity > 0
@@ -86,11 +87,19 @@ function Links() {
           />
           <Route
             path = "/myevents"
-            element = {<MyEvents />}
+            element = {
+              <ProtectedRoute>
+                <MyEvents />
+              </ProtectedRoute>
+            }
           />
           <Route
             path = "/create-event"
-            element = {<CreateEvent />}
+            element = {
+              <ProtectedRoute >
+                <CreateEvent />
+              </ProtectedRoute>
+            }
           />
         </Routes>
       </div>

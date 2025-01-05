@@ -18,7 +18,6 @@ export default function CreateEvent() {
 
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
-  const [dragging, setDragging] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -53,36 +52,6 @@ export default function CreateEvent() {
         (_, i) => i !== index
       );
       setEventDetails((prev) => ({ ...prev, tickets: updatedTickets }));
-    }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setEventDetails((prev) => ({
-          ...prev,
-          bannerPic: e.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setEventDetails((prev) => ({
-          ...prev,
-          bannerPic: e.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -170,37 +139,26 @@ export default function CreateEvent() {
           className="border w-full p-2 mb-4 rounded"
         />
 
-        {/* Drag and Drop or Choose Cover Image */}
-        <div
-          className={`border-dashed border-2 p-4 mb-4 rounded flex justify-center items-center ${
-            dragging ? "bg-gray-200" : "bg-gray-50"
-          }`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
-        >
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-            id="coverImage"
+        {/* Image URL Input */}
+        <input
+          type="text"
+          placeholder="Banner Image URL"
+          value={eventDetails.bannerPic}
+          onChange={(e) =>
+            setEventDetails((prev) => ({
+              ...prev,
+              bannerPic: e.target.value,
+            }))
+          }
+          className="border w-full p-2 mb-4 rounded"
+        />
+        {eventDetails.bannerPic && (
+          <img
+            src={eventDetails.bannerPic}
+            alt="Cover"
+            className="max-w-full h-40 object-cover mb-4"
           />
-          <label htmlFor="coverImage" className="cursor-pointer">
-            {eventDetails.bannerPic ? (
-              <img
-                src={eventDetails.bannerPic}
-                alt="Cover"
-                className="max-w-full h-40 object-cover"
-              />
-            ) : (
-              <span>Drag and drop or click to upload cover image</span>
-            )}
-          </label>
-        </div>
+        )}
 
         {/* Ticket Details */}
         <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>

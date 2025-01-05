@@ -74,15 +74,39 @@ export default function Signup() {
             password : formData.password
         }
 
+        console.log('Body Details:\n', body);
+
         const requestOptions = {
             method: "POST",
+            headers: {
+                "Content-Type": "application/json", // Inform the backend you're sending JSON
+            }, 
             body: JSON.stringify(body)
           }
 
           fetch("http://localhost:8080/sign_up", requestOptions)
           .then(res => res.json())
           .then(data => {
-                console.log(data)
+                if (data && data.access_token && data.refresh_token) {
+                    const { access_token, refresh_token } = data;
+
+                    // Save tokens
+                    localStorage.setItem('accessToken', access_token);
+                    localStorage.setItem('refreshToken', refresh_token);
+                
+                    setTimeout(() => {
+                        const token = localStorage.getItem('accessToken');
+                        console.log("Access Token after delay:\n", token);
+                        // Debugging fallback
+                        if (!token) {
+                            console.error("Failed to retrieve accessToken from localStorage");
+                        }
+                    }, 200);
+                    
+                } else {
+                    console.error("Invalid data object or missing tokens:", data);
+                }
+                    
                 // Show success popup
                 setShowPopup(true);
                     
@@ -103,9 +127,11 @@ export default function Signup() {
                     confirmPassword: '',
                 });
           })
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            console.log(err)
+            alert(err)
+          });
     
-        
     };
     
 

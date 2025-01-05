@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom"; // Import useLocation and Link
 import { Logo } from "../../assets";
 import SearchBar from "./search";
@@ -8,6 +8,8 @@ import { FaShoppingCart } from 'react-icons/fa';
 import * as HiIcons from 'react-icons/hi'
 import * as AiIcons from 'react-icons/ai'
 import { navLinks } from "../../constants";
+import { isAuthenticated } from "../individual_components/auth";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   onFilteredEvents: (filtered: CustomEvent[]) => void;
@@ -20,6 +22,11 @@ interface NavbarProps {
 export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, toggle, newMenu }: NavbarProps) {
   const location = useLocation(); // Get the current location
   const isHomePage = location.pathname === "/"; // Check if the current path is home "/"
+  const navigate = useNavigate(); // Call useNavigate inside the React component
+
+  useEffect(() => {
+
+  })
 
   const handleFilteredEvents = (filtered: CustomEvent[]) => {
     onFilteredEvents(filtered); // Update the filtered events in the parent component
@@ -38,6 +45,16 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
   function showSubnav () {
       setSubnav(!subnav)
   }
+
+  function exitPage() {
+    localStorage.clear(); // Clear tokens or perform other logout actions
+    setTimeout(() => {
+      isAuthenticated()
+    }, 200)
+    navigate("/"); // Redirect to the home page
+    newMenu(); // Call the menu toggle function
+  }
+  
 
   return (
     <div className="nav">
@@ -61,17 +78,26 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
         <div className="flex items-center space-x-8">
           {/* <h3 className="hover:text-secondary cursor-pointer">Sign Up</h3>
           <h3 className="hover:text-secondary cursor-pointer">Log In</h3> */}
-          <ul className="list-none sm:flex hidden justify-end items-center flex-1 space-x-4">
-            {
-              navLinks.map((nav, index) => (
-                <li key = {index} >
-                  <Link to={nav.link} className="hover:text-secondary cursor-pointer">
-                    <h3>{nav.title}</h3>
-                  </Link>
-                </li>
-              ))
-            }
-          </ul>
+          {
+            !isAuthenticated() ?
+            <ul className="list-none sm:flex hidden justify-end items-center flex-1 space-x-4">
+              {
+                navLinks.map((nav, index) => (
+                  <li key = {index} >
+                    <Link to={nav.link} className="hover:text-secondary cursor-pointer">
+                      <h3>{nav.title}</h3>
+                    </Link>
+                  </li>
+                ))
+              }
+            </ul>
+            :
+            <ul className="list-none sm:flex hidden justify-end items-center flex-1 space-x-4">
+              <li>
+                <h3 className="hover:text-secondary cursor-pointer" onClick={exitPage}>Logout</h3>
+              </li>
+            </ul>
+          }
           {/* Cart Icon with Total Items */}
           <Link to="/checkout">
             <div className="flex items-center space-x-2 cursor-pointer">
@@ -129,6 +155,7 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
               toggle &&
               <ul className="list-none flex flex-col justify-center flex-1">
                 {
+                  !isAuthenticated() ?
                   navLinks.map((nav, index) => (
                       <div>
                           <li key = {index} 
@@ -146,12 +173,32 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
                                 border-b-2 border-gray-300
                             `}
                           >
-                            <Link to={nav.link} className="hover:text-secondary cursor-pointer">
+                            <Link to={nav.link} className="hover:text-secondary cursor-pointer" onClick={newMenu}>
                               <h3>{nav.title}</h3>
                             </Link>
                           </li>
                         </div>
                     ))
+                    :
+                    <div>
+                      <li
+                        className={`
+                          font-poppins
+                          font-normal
+                          cursor-pointer
+                          text-[15px]
+                          text-secondary_dark
+                          bg-white
+                          mb-1
+                          p-3
+                          flex
+                          justify-between
+                          border-b-2 border-gray-300
+                        `}
+                      >
+                        <h3 className="hover:text-secondary cursor-pointer" onClick={exitPage}>Logout</h3>
+                      </li>
+                    </div>
                 }
               </ul>
           }

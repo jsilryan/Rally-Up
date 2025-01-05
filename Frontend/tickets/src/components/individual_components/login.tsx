@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { google } from '../../assets'; // Assuming `google` is an SVG import
 import { useNavigate } from 'react-router-dom';
+import { FaCheckCircle } from 'react-icons/fa';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -8,6 +9,7 @@ export default function Login() {
         password: '',
     });
     const [isGooglePopupVisible, setGooglePopupVisible] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,19 +22,45 @@ export default function Login() {
             alert('Please fill in both fields!');
             return;
         }
-
-        console.log('Login Details:', formData);
-
-        // Simulate successful login
-        alert('Login Successful!');
-
-        // Navigate to myevents and clear the form
-        navigate('/myevents');
-        setFormData({
-            email: '',
-            password: '',
-        });
+    
+        const body = {
+            email: formData.email,
+            password: formData.password,
+        };
+    
+        fetch('http://localhost:8080/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then((data) => {
+                if (data?.access_token && data?.refresh_token) {
+                    localStorage.setItem('accessToken', data.access_token);
+                    localStorage.setItem('refreshToken', data.refresh_token);
+    
+                    setShowPopup(true);
+                    setFormData({ email: '', password: '' });
+    
+                    setTimeout(() => {
+                        setShowPopup(false);
+                        navigate('/myevents');
+                    }, 3000);
+                } else {
+                    throw new Error('Invalid data or missing tokens');
+                }
+            })
+            .catch((error) => {
+                console.error('Error during login:', error);
+            });
     };
+    
+    
 
     const handleGoogleLogin = () => {
         setGooglePopupVisible(true);
@@ -111,6 +139,13 @@ export default function Login() {
                     </div>
                 )}
             </div>
+            {/* Success Popup */}
+            {showPopup && (
+                <div className="fixed top-0 left-0 right-0 bg-green-500 text-white p-4 flex items-center justify-center z-50">
+                    <FaCheckCircle className="text-white mr-2" size={24} />
+                    <span>Submitted Successfully!</span>
+                </div>
+            )}
         </div>
     );
 }
