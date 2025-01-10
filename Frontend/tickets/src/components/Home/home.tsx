@@ -10,7 +10,7 @@ interface HomeProps {
   showLocation: boolean
 }
 
-export default function Home({ filteredEvents, allEvents, showLocation }: HomeProps) {
+export default function Home({ filteredEvents, showLocation }: HomeProps) {
   console.log("Home Events:", filteredEvents)
   // Define your refs with the correct type
   const ref1 = useRef<HTMLDivElement>(null);

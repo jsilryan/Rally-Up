@@ -48,7 +48,7 @@ export default function MyEvents({ allEvents }: MyEventsProps) {
   const showLocation = false;
 
   return (
-    <div className="events-container p-6 min-h-screen bg-gray-100 flex flex-col items-center">
+    <div className="pt-28 events-container p-6 min-h-screen bg-gray-100 flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-4">My Events</h1>
       {loading ? (
         // Loading placeholder
@@ -71,7 +71,7 @@ export default function MyEvents({ allEvents }: MyEventsProps) {
           </button>
         </div>
       ) : (
-        <div className="py-8 flex justify-center items-start transition-opacity ease-in duration-700">
+        <div className="flex justify-center items-start transition-opacity ease-in duration-700">
           <div className="xl:max-w-[1280px] w-full relative">
             <Events events={events} showLocation={showLocation} />
           </div>

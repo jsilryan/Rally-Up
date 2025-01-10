@@ -5,7 +5,11 @@ import fetchWithAuth from "../individual_components/fetchWithAuth";
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
-export default function CreateEvent() {
+interface CreateEventProps {
+  setEventChange: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function CreateEvent({setEventChange}: CreateEventProps) {
   const [eventDetails, setEventDetails] = useState<CustomEvent>({
     id: "",
     name: "",
@@ -157,6 +161,7 @@ export default function CreateEvent() {
         });
         setCity("");
         setCountry("");
+        setEventChange(true)
       })
       .catch((error) => {
         console.error("Error creating event:", error);

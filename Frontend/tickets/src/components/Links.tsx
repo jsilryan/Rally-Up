@@ -3,15 +3,14 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from './Home/home';
 import Navbar from './Constants/navbar';
 import EventDetails from './individual_components/event';
-import { CustomEvent, events, eventFromServer, convertEventData } from '../constants';
-import { animateScroll as scroll, Events } from 'react-scroll'
+import { CustomEvent, eventFromServer, convertEventData } from '../constants';
+import { animateScroll as scroll } from 'react-scroll'
 import Checkout from './Home/checkout';
 import Signup from './individual_components/signup';
 import Login from './individual_components/login';
 import MyEvents from './Signed_In/my_events';
 import CreateEvent from './Signed_In/create_event';
 import ProtectedRoute from './individual_components/protectedRoute';
-import fetchWithAuth from './individual_components/fetchWithAuth';
 
 function Links() {
   // Filter events with at least one ticket type having quantity > 0
@@ -19,11 +18,9 @@ function Links() {
   const pathSegments = location.pathname.split('/');
   const firstSegment = pathSegments[0];
 
-  const [allEvents, setAllEvents] = useState<CustomEvent[]>([])
+  const [eventChange, setEventChange] = useState(true)
 
-  const validEvents = events.filter(event =>
-    event.tickets.some(ticket => ticket.quantity > 0)
-  );
+  const [allEvents, setAllEvents] = useState<CustomEvent[]>([])
 
   const requestOptions = {
     method: "GET",
@@ -34,7 +31,7 @@ function Links() {
   
   useEffect(
     () => {
-      if (firstSegment === "" && allEvents.length <= 0) {
+      if (firstSegment === "" && eventChange === true) {
         const url = "http://localhost:8080/events";
   
         fetch(url, requestOptions)
@@ -43,10 +40,11 @@ function Links() {
             console.log("Events Data:", data);
             const customEvents = convertEventData(data);
             setAllEvents(customEvents); // Set the data in the state as CustomEvent[]
+            setEventChange(false)
           })
           .catch((err) => console.log(err));
       }
-    }, [firstSegment] // The effect will run every time `firstSegment` changes
+    }, [firstSegment, eventChange] // The effect will run every time `firstSegment` changes
   );
 
   const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>(allEvents);
@@ -89,6 +87,7 @@ function Links() {
             allEvents={allEvents}
             toggle={toggle}
             newMenu={newMenu}
+            setEventChange={setEventChange}
           />
         </div>
       </div>
@@ -134,7 +133,7 @@ function Links() {
             path = "/create-event"
             element = {
               <ProtectedRoute >
-                <CreateEvent />
+                <CreateEvent setEventChange={setEventChange}/>
               </ProtectedRoute>
             }
           />
@@ -154,6 +153,7 @@ function Links() {
             allEvents={allEvents}
             toggle={toggle}
             newMenu={newMenu}
+            setEventChange={setEventChange}
           />
         </div>
       </div>

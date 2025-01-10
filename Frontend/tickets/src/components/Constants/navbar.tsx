@@ -17,9 +17,10 @@ interface NavbarProps {
   allEvents: CustomEvent[];
   toggle: boolean;
   newMenu: () => void
+  setEventChange: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, toggle, newMenu }: NavbarProps) {
+export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, toggle, newMenu, setEventChange }: NavbarProps) {
   const location = useLocation(); // Get the current location
   const isHomePage = location.pathname === "/"; // Check if the current path is home "/"
   const navigate = useNavigate(); // Call useNavigate inside the React component
@@ -53,6 +54,7 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
     }, 200)
     navigate("/"); // Redirect to the home page
     newMenu(); // Call the menu toggle function
+    setEventChange(true)
   }
   
 
