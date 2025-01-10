@@ -2,7 +2,11 @@ import React, { useState, useEffect, useMemo } from "react";
 import { CustomEvent, events } from "../../constants";
 import { Link } from "react-router-dom";
 
-export default function Location() {
+interface LocProps {
+  allEvents: CustomEvent[]
+}
+
+export default function Location({allEvents}: LocProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Function to get unique latest events by city and limit to 5
@@ -10,8 +14,8 @@ export default function Location() {
     const latestEventsByCity: Record<string, CustomEvent> = {};
 
     // Sort events by date descending
-    const sortedEvents = [...events].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    const sortedEvents = [...allEvents].sort(
+      (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
     );
 
     // Store the latest event for each city
@@ -83,12 +87,12 @@ export default function Location() {
                     </p>
                   </div>
                 )}
-                <span className="text-lg md:text-xl text-[#e06c7d]">
+                {/* <span className="text-lg md:text-xl text-[#e06c7d]">
                   {event.tickets[0].price > 0 ? `Kshs. ${event.tickets[0].price}` : "Free"}
-                </span>
+                </span> */}
 
                 {/* Button for viewing or purchasing ticket */}
-                <Link to={`${event.link}`}>
+                <Link to={`/events/${event.link.split('/').pop()}`}>
                   <button
                     className="mt-4 px-6 py-2 bg-secondary text-white rounded-xl hover:bg-[#e06c7d] transition-all duration-300"
                   >

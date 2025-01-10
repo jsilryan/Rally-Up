@@ -13,19 +13,37 @@ export const navLinks = [
     },
 ]
 
+interface Ticket {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface eventFromServer{
+  id: string;
+  hostUsername: string;
+  hostID: string | null;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  bannerPic: string;
+  gallery: string[];
+  tickets: Ticket[];
+}
+
 // Define the name for event data
 export interface CustomEvent {
-  id: number;
+  id: string;
   name: string;
   location: string;
-  date: string;
-  time: string;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
   bannerPic: string;
-  tickets: {
-    name: string;
-    price: number;
-    quantity: number;
-  }[];
+  tickets: Ticket[];
   company: string;
   description: string;
   link: string; // Dynamically generated link for the event
@@ -36,13 +54,66 @@ function generateLink(eventName: string): string {
   return `/events/${eventName.toLowerCase().replace(/\s+/g, '-')}`;
 }
 
+export const convertIndividualEventData = (event: eventFromServer): CustomEvent => {
+    // Split startDate and endDate into date and time
+    const [startDate, startTime] = event.startDate.split('T');
+    const [endDate, endTime] = event.endDate.split('T');
+
+    // Dynamically generate the link (example: convert name to a URL-friendly format)
+    const generateLink = (name: string) => name.toLowerCase().replace(/\s+/g, '-');
+
+    return {
+      id: event.id, // Convert id to number
+      name: event.name,
+      location: event.location,
+      startDate, // Date part
+      endDate,   // Date part
+      startTime, // Time part
+      endTime,   // Time part
+      bannerPic: event.bannerPic,
+      tickets: event.tickets,
+      company: event.hostUsername, // Assuming hostUsername is the company
+      description: event.description,
+      link: generateLink(event.name), // Generate link from event name
+    };
+  
+};
+
+export const convertEventData = (data: eventFromServer[]): CustomEvent[] => {
+  return data.map((event) => {
+    // Split startDate and endDate into date and time
+    const [startDate, startTime] = event.startDate.split('T');
+    const [endDate, endTime] = event.endDate.split('T');
+
+    // Dynamically generate the link (example: convert name to a URL-friendly format)
+    const generateLink = (name: string) => name.toLowerCase().replace(/\s+/g, '-');
+
+    return {
+      id: event.id, // Convert id to number
+      name: event.name,
+      location: event.location,
+      startDate, // Date part
+      endDate,   // Date part
+      startTime, // Time part
+      endTime,   // Time part
+      bannerPic: event.bannerPic,
+      tickets: event.tickets,
+      company: event.hostUsername, // Assuming hostUsername is the company
+      description: event.description,
+      link: generateLink(event.name), // Generate link from event name
+    };
+  });
+};
+
 export const events: CustomEvent[] = [
   {
-    id: 1,
+    id: "1",
     name: "Nairobi Tech Summit",
     location: "Nairobi, Kenya",
-    date: "2024-12-12",
-    time: "9:00 am",
+    startDate: "2024-12-12",
+    endDate: "2024-12-12",
+    startTime: "9:00 am",
+    endTime: "5:00 pm", // Adjusted to represent an end time
     bannerPic: img_1,
     tickets: [
       { name: "Early Bird", price: 1000, quantity: 50 },
@@ -55,11 +126,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Nairobi Tech Summit"),
   },
   {
-    id: 2,
+    id: "2",
     name: "Lamu Cultural Festival",
     location: "Lamu, Kenya",
-    date: "2024-11-20",
-    time: "10:00 am",
+    startDate: "2024-11-20",
+    endDate: "2024-11-20",
+    startTime: "10:00 am",
+    endTime: "6:00 pm", // Adjusted to represent an end time
     bannerPic: img_2,
     tickets: [
       { name: "General Admission", price: 2000, quantity: 150 }
@@ -70,11 +143,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Lamu Cultural Festival"),
   },
   {
-    id: 3,
+    id: "3",
     name: "Mombasa Food Festival",
     location: "Mombasa, Kenya",
-    date: "2024-11-25",
-    time: "12:00 pm",
+    startDate: "2024-11-25",
+    endDate: "2024-11-25",
+    startTime: "12:00 pm",
+    endTime: "10:00 pm", // Adjusted to represent an end time
     bannerPic: img_3,
     tickets: [
       { name: "General Admission", price: 0, quantity: 200 }
@@ -85,11 +160,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Mombasa Food Festival"),
   },
   {
-    id: 4,
+    id: "4",
     name: "Kisumu Music Concert",
     location: "Kisumu, Kenya",
-    date: "2024-12-02",
-    time: "6:30 pm",
+    startDate: "2024-12-02",
+    endDate: "2024-12-02",
+    startTime: "6:30 pm",
+    endTime: "10:30 pm", // Adjusted to represent an end time
     bannerPic: img_4,
     tickets: [
       { name: "Early Bird", price: 1000, quantity: 70 },
@@ -102,11 +179,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Kisumu Music Concert"),
   },
   {
-    id: 5,
+    id: "5",
     name: "Nakuru Wildlife Marathon",
     location: "Nakuru, Kenya",
-    date: "2024-11-18",
-    time: "6:00 am",
+    startDate: "2024-11-18",
+    endDate: "2024-11-18",
+    startTime: "6:00 am",
+    endTime: "12:00 pm", // Adjusted to represent an end time
     bannerPic: img_5,
     tickets: [
       { name: "Standard Entry", price: 1500, quantity: 300 }
@@ -117,11 +196,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Nakuru Wildlife Marathon"),
   },
   {
-    id: 6,
+    id: "6",
     name: "Eldoret Agribusiness Expo",
     location: "Eldoret, Kenya",
-    date: "2024-11-30",
-    time: "8:00 am",
+    startDate: "2024-11-30",
+    endDate: "2024-11-30",
+    startTime: "8:00 am",
+    endTime: "5:00 pm", // Adjusted to represent an end time
     bannerPic: img_6,
     tickets: [
       { name: "General Admission", price: 0, quantity: 250 }
@@ -132,11 +213,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Eldoret Agribusiness Expo"),
   },
   {
-    id: 7,
+    id: "7",
     name: "Nanyuki Adventure Hike",
     location: "Nanyuki, Kenya",
-    date: "2024-11-22",
-    time: "7:00 am",
+    startDate: "2024-11-22",
+    endDate: "2024-11-22",
+    startTime: "7:00 am",
+    endTime: "3:00 pm", // Adjusted to represent an end time
     bannerPic: img_7,
     tickets: [
       { name: "General Admission", price: 1000, quantity: 80 }
@@ -147,11 +230,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Nanyuki Adventure Hike"),
   },
   {
-    id: 8,
+    id: "8",
     name: "Diani Beach Yoga Retreat",
     location: "Diani, Kenya",
-    date: "2024-12-05",
-    time: "9:00 am",
+    startDate: "2024-12-05",
+    endDate: "2024-12-07", // Adjusted to represent a multi-day event
+    startTime: "9:00 am",
+    endTime: "5:00 pm", // Adjusted to represent an end time
     bannerPic: img_8,
     tickets: [
       { name: "Standard", price: 5000, quantity: 40 },
@@ -163,11 +248,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Diani Beach Yoga Retreat"),
   },
   {
-    id: 9,
+    id: "9",
     name: "Karen Christmas Market",
     location: "Nairobi, Kenya",
-    date: "2024-12-15",
-    time: "10:00 am",
+    startDate: "2024-12-15",
+    endDate: "2024-12-15",
+    startTime: "10:00 am",
+    endTime: "8:00 pm", // Adjusted to represent an end time
     bannerPic: img_9,
     tickets: [
       { name: "General Admission", price: 0, quantity: 400 }
@@ -178,11 +265,13 @@ export const events: CustomEvent[] = [
     link: generateLink("Karen Christmas Market"),
   },
   {
-    id: 10,
+    id: "10",
     name: "Thika Art and Craft Fair",
     location: "Thika, Kenya",
-    date: "2024-12-08",
-    time: "11:00 am",
+    startDate: "2024-12-08",
+    endDate: "2024-12-08",
+    startTime: "11:00 am",
+    endTime: "6:00 pm", // Adjusted to represent an end time
     bannerPic: img_10,
     tickets: [
       { name: "General Admission", price: 500, quantity: 120 }

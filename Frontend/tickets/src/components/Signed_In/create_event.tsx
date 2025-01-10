@@ -1,20 +1,31 @@
 import React, { useState } from "react";
 import { CustomEvent } from "../../constants";
 import { FaTrashAlt } from "react-icons/fa";
+import fetchWithAuth from "../individual_components/fetchWithAuth";
+import { IoArrowBack } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateEvent() {
   const [eventDetails, setEventDetails] = useState<CustomEvent>({
-    id: Date.now(),
+    id: "",
     name: "",
     location: "",
-    date: "",
-    time: "",
+    startDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
     bannerPic: "",
     tickets: [{ name: "", price: 0, quantity: 0 }], // Default ticket
     company: "",
     description: "",
     link: "",
   });
+  // const [token, setToken] = React.useState(() => {
+  //   const storedToken = localStorage.getItem("accessToken");
+  //   return storedToken ? JSON.parse(storedToken) : null;
+  // });
+  // console.log("Token:", token)
+  const navigate = useNavigate();
 
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
@@ -61,29 +72,109 @@ export default function CreateEvent() {
       return;
     }
 
-    const location = `${city.trim()}, ${country.trim()}`.replace(/, $/, "");
-    const generatedLink = `/events/${eventDetails.id}`;
-    console.log("Event Created:", { ...eventDetails, location, link: generatedLink });
+    // Validate tickets using map
+    const invalidTickets = eventDetails.tickets.map((ticket) => {
+      if (
+          typeof ticket.price !== "number" ||
+          typeof ticket.quantity !== "number" ||
+          isNaN(ticket.price) ||
+          isNaN(ticket.quantity) ||
+          ticket.price < 0 ||
+          ticket.quantity <= 0
+      ) {
+          return ticket; // Return invalid ticket
+      }
+      return null; // Valid ticket
+    }).filter((ticket) => ticket !== null); // Filter out valid tickets
 
-    setEventDetails({
-      id: Date.now(),
-      name: "",
-      location: "",
-      date: "",
-      time: "",
-      bannerPic: "",
-      tickets: [{ name: "", price: 0, quantity: 0 }], // Reset with default ticket
-      company: "",
-      description: "",
-      link: "",
-    });
-    setCity("");
-    setCountry("");
-    alert("Event created successfully!");
+    if (invalidTickets.length > 0) {
+        alert("Some tickets have invalid price or quantity values!");
+        console.error("Invalid Tickets:", invalidTickets);
+        return;
+    }
+
+    // Combine city and country into a single location string
+    const location = `${city.trim()}, ${country.trim()}`.replace(/, $/, "");
+  
+    // Prepare the event details payload
+    const body = {
+      name: eventDetails.name,
+      description: eventDetails.description,
+      startDate: eventDetails.startDate + "T" + eventDetails.startTime + ":00", // Combine date and time
+      endDate: eventDetails.endDate + "T" + eventDetails.endTime + ":00", // Example: Same as startDate for now
+      location: location, // Send null if location is empty
+      bannerPic: eventDetails.bannerPic,
+      tickets: eventDetails.tickets.map((ticket) => ({
+        name: ticket.name,
+        price: ticket.price, // Ensure price is an integer
+        quantity: ticket.quantity, // Ensure quantity is an integer
+      })),
+    };
+  
+    console.log("Event Created:", body);
+    const url = "http://localhost:8080/add_event"
+    const options = {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json" ,
+      },
+      body: JSON.stringify(body),
+    }
+    fetchWithAuth(url, options)
+  
+    // fetch("http://localhost:8080/add_event", {
+    //   method: "POST",
+    //   headers: { 
+    //     "Content-Type": "application/json" ,
+    //     'Authorization' : `Bearer ${token}`
+    //   },
+    //   body: JSON.stringify(body),
+    // })
+      .then((res) => {
+        console.log('Status:', res.status, res.statusText);
+        if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.text(); // Read response as text
+      })
+      .then((data) => {
+        console.log("Response from server:", data);
+        alert("Event created successfully!");
+        // Reset form fields
+        setEventDetails({
+          id: String(Date.now()),
+          name: "",
+          location: "",
+          startDate: "",
+          endDate: "",
+          startTime: "",
+          endTime: "",
+          bannerPic: "",
+          tickets: [{ name: "", price: 0, quantity: 0 }], // Reset with default ticket
+          company: "",
+          description: "",
+          link: "",
+        });
+        setCity("");
+        setCountry("");
+      })
+      .catch((error) => {
+        console.error("Error creating event:", error);
+        alert("Failed to create the event. Please try again.");
+      });
   };
+  
 
   return (
     <div className="create-event-container p-6 min-h-screen bg-gray-100 flex flex-col items-center lg:pt-[100px] pt-28">
+      {/* Back Button */}
+      <button 
+        className="flex items-center text-secondary mb-4"
+        onClick={() => navigate('/myevents')}
+      >
+        <IoArrowBack size={24} className="mr-2" />
+        <span>Back</span>
+      </button>
       <h1 className="text-2xl font-bold mb-4 text-secondary">Create Event</h1>
       <div className="form w-full max-w-lg bg-white p-6 rounded-md shadow-md">
         {/* All Inputs */}
@@ -111,15 +202,33 @@ export default function CreateEvent() {
         />
         <input
           type="date"
-          name="date"
-          value={eventDetails.date}
+          name="startDate"
+          placeholder="Start Date"
+          value={eventDetails.startDate}
+          onChange={handleInputChange}
+          className="border w-full p-2 mb-4 rounded"
+        />
+        <input
+          type="date"
+          name="endDate"
+          placeholder="End Date"
+          value={eventDetails.endDate}
           onChange={handleInputChange}
           className="border w-full p-2 mb-4 rounded"
         />
         <input
           type="time"
-          name="time"
-          value={eventDetails.time}
+          name="startTime"
+          placeholder="Start Time"
+          value={eventDetails.startTime}
+          onChange={handleInputChange}
+          className="border w-full p-2 mb-4 rounded"
+        />
+        <input
+          type="time"
+          name="endTime"
+          placeholder="End Time"
+          value={eventDetails.endTime}
           onChange={handleInputChange}
           className="border w-full p-2 mb-4 rounded"
         />
@@ -164,7 +273,7 @@ export default function CreateEvent() {
         <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
         {eventDetails.tickets.map((ticket, index) => (
           <div key={index} className="flex items-center mb-4">
-            <div className="flex xxs:flex-row flex-col">
+            <div className="flex xs:flex-row flex-col">
               <input
                 type="text"
                 placeholder="Ticket Type"
@@ -172,7 +281,16 @@ export default function CreateEvent() {
                 onChange={(e) =>
                   handleTicketChange(index, "name", e.target.value)
                 }
-                className="border p-2 flex-1 xxs:mr-2 rounded"
+                className="border p-2 flex-1 xs:mr-2 rounded"
+              />
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={ticket.quantity}
+                onChange={(e) =>
+                  handleTicketChange(index, "quantity", parseFloat(e.target.value))
+                }
+                className="border p-2 w-20 rounded xs:mt-0 mt-2 xs:mr-2 "
               />
               <input
                 type="number"
@@ -181,7 +299,7 @@ export default function CreateEvent() {
                 onChange={(e) =>
                   handleTicketChange(index, "price", parseFloat(e.target.value))
                 }
-                className="border p-2 w-20 rounded xxs:mt-0 mt-2"
+                className="border p-2 w-20 rounded xs:mt-0 mt-2"
               />
             </div>
             {index > 0 && (

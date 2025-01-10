@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from './Home/home';
 import Navbar from './Constants/navbar';
 import EventDetails from './individual_components/event';
-import { CustomEvent, events } from '../constants';
+import { CustomEvent, events, eventFromServer, convertEventData } from '../constants';
 import { animateScroll as scroll, Events } from 'react-scroll'
 import Checkout from './Home/checkout';
 import Signup from './individual_components/signup';
@@ -11,15 +11,52 @@ import Login from './individual_components/login';
 import MyEvents from './Signed_In/my_events';
 import CreateEvent from './Signed_In/create_event';
 import ProtectedRoute from './individual_components/protectedRoute';
+import fetchWithAuth from './individual_components/fetchWithAuth';
 
 function Links() {
   // Filter events with at least one ticket type having quantity > 0
+  const location = useLocation();
+  const pathSegments = location.pathname.split('/');
+  const firstSegment = pathSegments[0];
+
+  const [allEvents, setAllEvents] = useState<CustomEvent[]>([])
+
   const validEvents = events.filter(event =>
     event.tickets.some(ticket => ticket.quantity > 0)
   );
 
-  const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>(validEvents);
-  const allEvents = validEvents;
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }
+  
+  useEffect(
+    () => {
+      if (firstSegment === "" && allEvents.length <= 0) {
+        const url = "http://localhost:8080/events";
+  
+        fetch(url, requestOptions)
+          .then((response) => response.json())
+          .then((data: eventFromServer[]) => {
+            console.log("Events Data:", data);
+            const customEvents = convertEventData(data);
+            setAllEvents(customEvents); // Set the data in the state as CustomEvent[]
+          })
+          .catch((err) => console.log(err));
+      }
+    }, [firstSegment] // The effect will run every time `firstSegment` changes
+  );
+
+  const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>(allEvents);
+    
+  useEffect(() => {
+    console.log("Updated allEvents:", allEvents); // Logs the updated state
+    setFilteredEvents(allEvents)
+  }, [allEvents]);  // Triggers whenever `allEvents` is updated  
+  
+  // const allEvents = validEvents;
 
   const handleFilteredEvents = (filtered: CustomEvent[]) => {
     setFilteredEvents(filtered);
@@ -89,7 +126,7 @@ function Links() {
             path = "/myevents"
             element = {
               <ProtectedRoute>
-                <MyEvents />
+                <MyEvents allEvents={allEvents} />
               </ProtectedRoute>
             }
           />

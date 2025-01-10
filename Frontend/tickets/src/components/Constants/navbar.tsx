@@ -94,6 +94,16 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
             :
             <ul className="list-none sm:flex hidden justify-end items-center flex-1 space-x-4">
               <li>
+                <Link to="/myevents">
+                  <h3 className="hover:text-secondary cursor-pointer" >My Events</h3>
+                </Link>
+              </li>
+              <li>
+                <Link to="/create-event">
+                  <h3 className="hover:text-secondary cursor-pointer" >Create Event</h3>
+                </Link>
+              </li>
+              <li>
                 <h3 className="hover:text-secondary cursor-pointer" onClick={exitPage}>Logout</h3>
               </li>
             </ul>
@@ -181,6 +191,47 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
                     ))
                     :
                     <div>
+                      
+                      <li
+                        className={`
+                          font-poppins
+                          font-normal
+                          cursor-pointer
+                          text-[15px]
+                          text-secondary_dark
+                          bg-white
+                          mb-1
+                          p-3
+                          flex
+                          justify-between
+                          border-b-2 border-gray-300
+                        `}
+                      >
+                        <Link to="/myevents" onClick={newMenu}>
+                          <h3 className="hover:text-secondary cursor-pointer" >My Events</h3>
+                        </Link>
+                      </li>
+                      
+                      <li
+                        className={`
+                          font-poppins
+                          font-normal
+                          cursor-pointer
+                          text-[15px]
+                          text-secondary_dark
+                          bg-white
+                          mb-1
+                          p-3
+                          flex
+                          justify-between
+                          border-b-2 border-gray-300
+                        `}
+                      >
+                        <Link to="/create-event" onClick={newMenu}>
+                          <h3 className="hover:text-secondary cursor-pointer" >Create Event</h3>
+                        </Link>
+                      </li>
+                      
                       <li
                         className={`
                           font-poppins

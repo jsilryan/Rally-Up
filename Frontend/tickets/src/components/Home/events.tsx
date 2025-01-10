@@ -11,6 +11,7 @@ interface EventsProps {
 }
 
 const Events: React.FC<EventsProps> = ({ events, showLocation, searchQuery }) => {
+  console.log("Events:", events)
   const [currentPage, setCurrentPage] = useState(0);
   const eventsPerPage = 6;
 
@@ -83,7 +84,7 @@ const Events: React.FC<EventsProps> = ({ events, showLocation, searchQuery }) =>
                     {event.location}
                   </p>
                   <p className="text-gray-500 text-sm">
-                    {new Date(event.date).toLocaleDateString()} at {event.time}
+                    {new Date(event.startDate).toLocaleDateString()} at {event.startTime}
                   </p>
                   {/* <p className="text-secondary font-bold mt-2">{event.pricing}</p> */}
                 </div>

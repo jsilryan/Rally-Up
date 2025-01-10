@@ -7,7 +7,7 @@ interface Ticket {
 }
 
 export interface CartItem {
-  eventId: number;
+  eventId: string;
   tickets: Record<string, Ticket>;
 }
 
