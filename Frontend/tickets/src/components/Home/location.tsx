@@ -31,7 +31,7 @@ export default function Location({allEvents}: LocProps) {
       .sort(() => Math.random() - 0.5) // Shuffle array randomly
       .slice(0, 5); // Take only the first 5
 
-    return randomEvents;
+    return randomEvents; 
   }, []);
 
   // Auto-slide functionality to shift events every 5 seconds

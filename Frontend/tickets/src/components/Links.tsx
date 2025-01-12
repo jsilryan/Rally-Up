@@ -11,6 +11,8 @@ import Login from './individual_components/login';
 import MyEvents from './Signed_In/my_events';
 import CreateEvent from './Signed_In/create_event';
 import ProtectedRoute from './individual_components/protectedRoute';
+import { isAuthenticated } from './individual_components/auth';
+import fetchWithAuth from './individual_components/fetchWithAuth';
 
 function Links() {
   // Filter events with at least one ticket type having quantity > 0
@@ -21,6 +23,8 @@ function Links() {
   const [eventChange, setEventChange] = useState(true)
 
   const [allEvents, setAllEvents] = useState<CustomEvent[]>([])
+  const [myEvents, setMyEvents] = useState<CustomEvent[]>([])
+  
 
   const requestOptions = {
     method: "GET",
@@ -31,7 +35,7 @@ function Links() {
   
   useEffect(
     () => {
-      if (firstSegment === "" && eventChange === true) {
+      if (allEvents.length <= 0 || eventChange === true) {
         const url = "http://localhost:8080/events";
   
         fetch(url, requestOptions)
@@ -39,19 +43,54 @@ function Links() {
           .then((data: eventFromServer[]) => {
             console.log("Events Data:", data);
             const customEvents = convertEventData(data);
-            setAllEvents(customEvents); // Set the data in the state as CustomEvent[]
+
+            // Convert and filter events - Only those being held today or later
+            const currentCustomEvents = customEvents.filter((event) => {
+              const eventDate = new Date(event.startDate); // Convert event start date to a Date object
+              const today = new Date(); // Get today's date
+              today.setHours(0, 0, 0, 0); // Normalize to midnight for accurate comparison
+              return eventDate >= today; // Include events from today or later
+            });
+
+            setAllEvents(currentCustomEvents); // Set the data in the state as CustomEvent[]
             setEventChange(false)
           })
           .catch((err) => console.log(err));
+
+        if (isAuthenticated()) {
+          const fetchData = async () => {
+            const url_my_events = "http://localhost:8080/my_events";
+            const requestOptions_my_events = {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            };
+            try {
+              await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate 3s delay
+              const response = await fetchWithAuth(url_my_events, requestOptions_my_events);
+              const data: eventFromServer[] = await response.json();
+              const customEvents = convertEventData(data);
+              setMyEvents(customEvents)
+            } catch (err) {
+              console.log(err);
+            }
+          };
+
+          fetchData();
+        }
       }
-    }, [firstSegment, eventChange] // The effect will run every time `firstSegment` changes
+    }, [eventChange] // The effect will run every time `firstSegment` changes
   );
 
   const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>(allEvents);
-    
+
   useEffect(() => {
     console.log("Updated allEvents:", allEvents); // Logs the updated state
     setFilteredEvents(allEvents)
+
+
+    console.log("My Events:", myEvents)
   }, [allEvents]);  // Triggers whenever `allEvents` is updated  
   
   // const allEvents = validEvents;
@@ -107,7 +146,7 @@ function Links() {
           />
           <Route 
             path="/events/:eventId" 
-            element={<EventDetails events={allEvents} />} 
+            element={<EventDetails events={allEvents} myEvents={myEvents}/>} 
           />
           <Route
             path='/checkout'
@@ -125,7 +164,7 @@ function Links() {
             path = "/myevents"
             element = {
               <ProtectedRoute>
-                <MyEvents allEvents={allEvents} />
+                <MyEvents events={myEvents}/>
               </ProtectedRoute>
             }
           />

@@ -7,11 +7,11 @@ import { convertEventData } from "../../constants";
 import Events from "../Home/events";
 
 interface MyEventsProps {
-  allEvents: CustomEvent[];
+  events: CustomEvent[]
 }
 
-export default function MyEvents({ allEvents }: MyEventsProps) {
-  const [events, setEvents] = useState<CustomEvent[]>([]);
+export default function MyEvents({ events }: MyEventsProps) {
+  
   const [loading, setLoading] = useState(true); // New loading state
   const navigate = useNavigate();
 
@@ -19,31 +19,19 @@ export default function MyEvents({ allEvents }: MyEventsProps) {
     navigate("/create-event");
   };
 
-  const url = "http://localhost:8080/my_events";
-  const requestOptions = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
+  // const url = "http://localhost:8080/my_events";
+  // const requestOptions = {
+  //   method: "GET",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  // };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate 3s delay
-        const response = await fetchWithAuth(url, requestOptions);
-        const data: eventFromServer[] = await response.json();
-        const customEvents = convertEventData(data);
-        setEvents(customEvents);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false); // End loading state
-      }
-    };
-
-    fetchData();
-  }, []);
+    if (events.length > 0) {
+      setLoading(false)
+    }
+  }, [events]);
 
   const showLocation = false;
 

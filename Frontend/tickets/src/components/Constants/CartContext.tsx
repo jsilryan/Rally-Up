@@ -9,6 +9,7 @@ interface Ticket {
 export interface CartItem {
   eventId: string;
   tickets: Record<string, Ticket>;
+  link: string;
 }
 
 interface CartContextType {

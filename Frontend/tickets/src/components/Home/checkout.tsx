@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { FaShoppingCart } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
 import { useCart, CartItem } from '../Constants/CartContext';
-import { CustomEvent, events } from "../../constants";
+import { CustomEvent } from "../../constants";
+import { Link } from 'react-router-dom';
 
 interface Props {
     events: CustomEvent[]
@@ -12,6 +12,8 @@ const Checkout: React.FC<Props> = ({events}) => {
   const [showMpesaInput, setShowMpesaInput] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isValidNumber, setIsValidNumber] = useState(false);
+
+  console.log("Cart:", cart)
 
   // Function to calculate the total price
   const totalPrice = cart.reduce((total, item) => {
@@ -37,6 +39,14 @@ const Checkout: React.FC<Props> = ({events}) => {
       clearCart()
     }
   };
+  useEffect (() => {
+    const isCartEmpty = cart.length === 0 || cart.every((item) => Object.keys(item.tickets).length === 0);
+    if (isCartEmpty) {
+      clearCart(); // Optional: Clear the cart if needed
+      console.log("No items in the cart.");
+    } 
+  }, [])
+
 
   return (
     <div className="flex justify-center items-start pt-28 transition-opacity ease-in duration-700">
@@ -57,7 +67,10 @@ const Checkout: React.FC<Props> = ({events}) => {
                 return (
                     <div key={item.eventId} className="mb-4">
                         {/* Use event?.name to display the event name if found */}
-                        <h3 className="font-bold text-lg text-secondary_dark">{event?.name || 'Event Name Not Found'}</h3>
+                        <Link to={`/events/${item.link.split('/').pop()}`}>
+                          <h3 className="font-bold text-lg text-secondary_dark hover:cursor-pointer">{event?.name || 'Event Name Not Found'}</h3>
+                        </Link>
+                        
                         {Object.entries(item.tickets).map(([type, details]) => (
                             <div key={type} className="flex xxs:justify-between xxs:flex-row flex-col text-secondary_dark mb-2">
                                 <span className = "font-semibold">
