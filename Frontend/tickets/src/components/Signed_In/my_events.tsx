@@ -1,16 +1,59 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import fetchWithAuth from "../individual_components/fetchWithAuth";
-import { eventFromServer } from "../../constants";
-import { CustomEvent } from "../../constants";
-import { convertEventData } from "../../constants";
+import { CustomEvent, eventFromServer, convertEventData, serverLink } from "../../constants";
 import Events from "../Home/events";
+import { isAuthenticated } from '../individual_components/auth';
+import fetchWithAuth from '../individual_components/fetchWithAuth';
 
 interface MyEventsProps {
-  events: CustomEvent[]
+  setMyEvents: React.Dispatch<React.SetStateAction<CustomEvent[]>>;
+  eventChange: boolean;
 }
 
-export default function MyEvents({ events }: MyEventsProps) {
+export default function MyEvents({ setMyEvents, eventChange }: MyEventsProps) {
+  const [events, setEvents] = useState<CustomEvent[]>([])
+  const [noData, setNoData] = useState<boolean>(false)
+  useEffect (() => {
+    const fetchMyEvents = async () => {
+      if (isAuthenticated()) {
+        const url_my_events = `${serverLink}/my_events`;
+        const requestOptions_my_events = {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+        let retryCount = 0;
+  
+        while (retryCount < 5) { // Retry up to 5 times
+          try {
+            const response = await fetchWithAuth(url_my_events, requestOptions_my_events);
+  
+            if (!response.ok) {
+              throw new Error(`Error: ${response.status}`);
+            }
+  
+            const data: eventFromServer[] = await response.json();
+            console.log("My Events Data:", data);
+  
+            const customEvents = convertEventData(data);
+            setEvents(customEvents);
+            setMyEvents(customEvents)
+            setNoData(true)
+            break; // Exit loop on success
+          } catch (err) {
+            console.log("Retry fetching my events:", err);
+            retryCount++;
+            await new Promise((resolve) => setTimeout(resolve, 3000)); // Delay before retry
+          }
+        }
+      }
+    };
+    if (events.length <= 0) {
+      fetchMyEvents();
+    }
+  }, [eventChange])
+     
   
   const [loading, setLoading] = useState(true); // New loading state
   const navigate = useNavigate();
@@ -20,7 +63,7 @@ export default function MyEvents({ events }: MyEventsProps) {
   };
 
   useEffect(() => {
-    if (events.length > 0) {
+    if (events.length > 0 || noData) {
       setLoading(false)
     }
   }, [events]);

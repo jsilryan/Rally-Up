@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { google } from '../../assets'; // Assuming `google` is an SVG import
 import { FaCheckCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { serverLink } from '../../constants';
 
 export default function Signup() {
     const [formData, setFormData] = useState({
@@ -84,7 +85,7 @@ export default function Signup() {
             body: JSON.stringify(body)
           }
 
-          fetch("http://localhost:8080/sign_up", requestOptions)
+          fetch(`${serverLink}/sign_up`, requestOptions)
           .then(res => res.json())
           .then(data => {
                 if (data && data.access_token && data.refresh_token) {

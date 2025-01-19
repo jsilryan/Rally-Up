@@ -16,3 +16,35 @@ DELETE - /delete_event
 POST - /upload
 POST - /sign_up
 POST - /login
+
+
+
+
+{
+    "username" : "thierryhenry",
+    "firstName" : "Thierry",
+    "lastName" : "Henry",
+    "phone" : "0707112233",
+    "email" : "henry@gmail.com",
+    "password" : "_19UIOPy@"
+}
+{
+    "username" : "gabrieljesus",
+    "firstName" : "Gabriel",
+    "lastName" : "Jesus",
+    "phone" : "0707112234",
+    "email" : "jesus@gmail.com",
+    "password" : "ABcd1234("
+}
+
+silryan1290
+ABcd1234&
+
+{
+    "username" : "yvesbissouma",
+    "firstName" : "Yves",
+    "lastName" : "Bissouma",
+    "phone" : "0707112235",
+    "email" : "yves@gmail.com",
+    "password" : "ABcd1234*#"
+}

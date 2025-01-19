@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom"; // Import useLocation and Link
 import { Logo } from "../../assets";
 import SearchBar from "./search";
-import { CustomEvent, events } from "../../constants"; // Assuming events is an array of event objects
+import { CustomEvent } from "../../constants"; // Assuming events is an array of event objects
 import { useCart } from './CartContext';
 import { FaShoppingCart } from 'react-icons/fa';
 import * as HiIcons from 'react-icons/hi'
@@ -53,7 +53,7 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
       isAuthenticated()
     }, 200)
     navigate("/"); // Redirect to the home page
-    newMenu(); // Call the menu toggle function
+    toggle && newMenu(); // Call the menu toggle function
     setEventChange(true)
   }
   

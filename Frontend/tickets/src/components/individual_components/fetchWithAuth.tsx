@@ -1,4 +1,5 @@
 import { jwtDecode } from "jwt-decode"
+import { serverLink } from "../../constants";
 
 const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
     let token: string | null = localStorage.getItem('accessToken');
@@ -13,7 +14,7 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Re
         }
 
         try {
-            const response = await fetch("http://localhost:8080/refresh_token", {
+            const response = await fetch(`${serverLink}/refresh_token`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

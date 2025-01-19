@@ -1,7 +1,5 @@
-import { useRef } from "react";
 import Location from "./location";
 import Events from "./events";
-import { useIsVisible } from "../Constants/isVisible";
 import { CustomEvent } from "../../constants";
 
 interface HomeProps {
@@ -12,13 +10,6 @@ interface HomeProps {
 
 export default function Home({ filteredEvents, showLocation }: HomeProps) {
   console.log("Home Events:", filteredEvents);
-  
-  // Define your refs with the correct type
-  const ref1 = useRef<HTMLDivElement>(null);
-  const isVisible1 = useIsVisible(ref1);
-
-  const ref2 = useRef<HTMLDivElement>(null);
-  const isVisible2 = useIsVisible(ref2);
 
   // Loading state
   const isLoading = filteredEvents.length === 0;

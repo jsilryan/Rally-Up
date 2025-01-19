@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { CustomEvent } from "../../constants";
+import React, { useState, useEffect } from "react";
+import { CustomEvent, serverLink } from "../../constants";
 import { FaTrashAlt } from "react-icons/fa";
 import fetchWithAuth from "../individual_components/fetchWithAuth";
 import { IoArrowBack } from "react-icons/io5";
@@ -7,23 +7,33 @@ import { useNavigate } from "react-router-dom";
 
 interface CreateEventProps {
   setEventChange: React.Dispatch<React.SetStateAction<boolean>>;
+  setUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+  update: boolean;
+  event: CustomEvent | null
 }
 
-export default function CreateEvent({setEventChange}: CreateEventProps) {
-  const [eventDetails, setEventDetails] = useState<CustomEvent>({
-    id: "",
-    name: "",
-    location: "",
-    startDate: "",
-    endDate: "",
-    startTime: "",
-    endTime: "",
-    bannerPic: "",
-    tickets: [{ name: "", price: 0, quantity: 0 }], // Default ticket
-    company: "",
-    description: "",
-    link: "",
-  });
+export default function CreateEvent({setEventChange, setUpdate, update, event}: CreateEventProps) {
+  const [eventDetails, setEventDetails] = useState<CustomEvent>(
+    update && event != null ? 
+    event
+    :
+    {
+      id: "",
+      name: "",
+      location: "",
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      endTime: "",
+      bannerPic: "",
+      tickets: [{ name: "", price: 0, quantity: 0 }], // Default ticket
+      company: "",
+      description: "",
+      link: "",
+    }
+  );
+
+  console.log("Event Details:", eventDetails)
   // const [token, setToken] = React.useState(() => {
   //   const storedToken = localStorage.getItem("accessToken");
   //   return storedToken ? JSON.parse(storedToken) : null;
@@ -104,8 +114,8 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
     const body = {
       name: eventDetails.name,
       description: eventDetails.description,
-      startDate: eventDetails.startDate + "T" + eventDetails.startTime + ":00", // Combine date and time
-      endDate: eventDetails.endDate + "T" + eventDetails.endTime + ":00", // Example: Same as startDate for now
+      startDate: eventDetails.startDate + "T" + eventDetails.startTime, // Combine date and time
+      endDate: eventDetails.endDate + "T" + eventDetails.endTime, // Example: Same as startDate for now
       location: location, // Send null if location is empty
       bannerPic: eventDetails.bannerPic,
       tickets: eventDetails.tickets.map((ticket) => ({
@@ -115,25 +125,16 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
       })),
     };
   
-    console.log("Event Created:", body);
-    const url = "http://localhost:8080/add_event"
+    console.log(`Event ${update ? "Updated" : "Created"}:`, body);
+    const url = update ? `${serverLink}/update_event?event_id=${eventDetails.id}` : `${serverLink}/add_event`
     const options = {
-      method: "POST",
+      method: update ? "PATCH" : "POST",
       headers: { 
         "Content-Type": "application/json" ,
       },
       body: JSON.stringify(body),
     }
     fetchWithAuth(url, options)
-  
-    // fetch("http://localhost:8080/add_event", {
-    //   method: "POST",
-    //   headers: { 
-    //     "Content-Type": "application/json" ,
-    //     'Authorization' : `Bearer ${token}`
-    //   },
-    //   body: JSON.stringify(body),
-    // })
       .then((res) => {
         console.log('Status:', res.status, res.statusText);
         if (!res.ok) {
@@ -143,7 +144,7 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
       })
       .then((data) => {
         console.log("Response from server:", data);
-        alert("Event created successfully!");
+        alert(`Event ${update ? "Updated" : "Created"} Successfully!`);
         // Reset form fields
         setEventDetails({
           id: String(Date.now()),
@@ -162,12 +163,24 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
         setCity("");
         setCountry("");
         setEventChange(true)
+        update && setUpdate(false)
+        localStorage.removeItem("update");
+        localStorage.removeItem("updateEvent"); // Clear if null
+        navigate("/myevents")
       })
       .catch((error) => {
-        console.error("Error creating event:", error);
-        alert("Failed to create the event. Please try again.");
+        console.error(`Error ${update ? "updating" : "creating"} event:`, error);
+        alert(`Failed to ${update ? "update" : "create"} the event. Please try again.`);
       });
   };
+
+  useEffect(() => {
+    if (event) {
+      const [city, country] = event.location.split(", ");
+      setCity(city?.trim() || "")
+      setCountry(country?.trim() || "")
+    }
+  }, [event])
   
 
   return (
@@ -180,7 +193,7 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
         <IoArrowBack size={24} className="mr-2" />
         <span>Back</span>
       </button>
-      <h1 className="text-2xl font-bold mb-4 text-secondary">Create Event</h1>
+      <h1 className="text-2xl font-bold mb-4 text-secondary">{update ? "Update " : "Create " }Event</h1>
       <div className="form w-full max-w-lg bg-white p-6 rounded-md shadow-md">
         {/* All Inputs */}
         <input
@@ -237,14 +250,6 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
           onChange={handleInputChange}
           className="border w-full p-2 mb-4 rounded"
         />
-        <input
-          type="text"
-          name="company"
-          placeholder="Company Name"
-          value={eventDetails.company}
-          onChange={handleInputChange}
-          className="border w-full p-2 mb-4 rounded"
-        />
         <textarea
           name="description"
           placeholder="Description (optional)"
@@ -254,81 +259,92 @@ export default function CreateEvent({setEventChange}: CreateEventProps) {
         />
 
         {/* Image URL Input */}
-        <input
-          type="text"
-          placeholder="Banner Image URL"
-          value={eventDetails.bannerPic}
-          onChange={(e) =>
-            setEventDetails((prev) => ({
-              ...prev,
-              bannerPic: e.target.value,
-            }))
-          }
-          className="border w-full p-2 mb-4 rounded"
-        />
-        {eventDetails.bannerPic && (
-          <img
-            src={eventDetails.bannerPic}
-            alt="Cover"
-            className="max-w-full h-40 object-cover mb-4"
-          />
-        )}
-
-        {/* Ticket Details */}
-        <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
-        {eventDetails.tickets.map((ticket, index) => (
-          <div key={index} className="flex items-center mb-4">
-            <div className="flex xs:flex-row flex-col">
-              <input
-                type="text"
-                placeholder="Ticket Type"
-                value={ticket.name}
-                onChange={(e) =>
-                  handleTicketChange(index, "name", e.target.value)
-                }
-                className="border p-2 flex-1 xs:mr-2 rounded"
+        {
+          !update &&
+          <div>
+            <input
+              type="text"
+              placeholder="Banner Image URL"
+              value={eventDetails.bannerPic}
+              onChange={(e) =>
+                setEventDetails((prev) => ({
+                  ...prev,
+                  bannerPic: e.target.value,
+                }))
+              }
+              className="border w-full p-2 mb-4 rounded"
+            />
+            {eventDetails.bannerPic && (
+              <img
+                src={eventDetails.bannerPic}
+                alt="Cover"
+                className="max-w-full h-40 object-cover mb-4"
               />
-              <input
-                type="number"
-                placeholder="Quantity"
-                value={ticket.quantity}
-                onChange={(e) =>
-                  handleTicketChange(index, "quantity", parseFloat(e.target.value))
-                }
-                className="border p-2 w-20 rounded xs:mt-0 mt-2 xs:mr-2 "
-              />
-              <input
-                type="number"
-                placeholder="Price"
-                value={ticket.price}
-                onChange={(e) =>
-                  handleTicketChange(index, "price", parseFloat(e.target.value))
-                }
-                className="border p-2 w-20 rounded xs:mt-0 mt-2"
-              />
-            </div>
-            {index > 0 && (
-              <button
-                onClick={() => handleDeleteTicket(index)}
-                className="text-red-500 hover:text-red-600 ml-2"
-              >
-                <FaTrashAlt />
-              </button>
             )}
           </div>
-        ))}
-        <button
-          onClick={handleAddTicket}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
-        >
-          Add Ticket
-        </button>
+        }
+
+        {/* Ticket Details */}
+        {
+          !update &&
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
+            {eventDetails.tickets && eventDetails.tickets.map((ticket, index) => (
+              <div key={index} className="flex items-center mb-4">
+                <div className="flex xs:flex-row flex-col">
+                  <input
+                    type="text"
+                    placeholder="Ticket Type"
+                    value={ticket.name}
+                    onChange={(e) =>
+                      handleTicketChange(index, "name", e.target.value)
+                    }
+                    className="border p-2 flex-1 xs:mr-2 rounded"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Quantity"
+                    value={ticket.quantity}
+                    onChange={(e) =>
+                      handleTicketChange(index, "quantity", parseFloat(e.target.value))
+                    }
+                    className="border p-2 w-20 rounded xs:mt-0 mt-2 xs:mr-2 "
+                  />
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    value={ticket.price}
+                    onChange={(e) =>
+                      handleTicketChange(index, "price", parseFloat(e.target.value))
+                    }
+                    className="border p-2 w-20 rounded xs:mt-0 mt-2"
+                  />
+                </div>
+                {index > 0 && (
+                  <button
+                    onClick={() => handleDeleteTicket(index)}
+                    className="text-red-500 hover:text-red-600 ml-2"
+                  >
+                    <FaTrashAlt />
+                  </button>
+                )}
+              </div>
+            ))}
+            
+            <button
+              onClick={handleAddTicket}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
+            >
+              Add Ticket
+            </button>
+          </div>
+        }
 
         <button
           onClick={handleSubmit}
           className="bg-green-500 text-white w-full p-2 rounded hover:bg-green-600"
         >
-          Create Event
+          {update ? "Update " : "Create " } Event
         </button>
       </div>
     </div>

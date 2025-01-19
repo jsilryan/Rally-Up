@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { CustomEvent, events } from "../../constants";
+import { useState, useEffect, useMemo } from "react";
+import { CustomEvent } from "../../constants";
 import { Link } from "react-router-dom";
 
 interface LocProps {

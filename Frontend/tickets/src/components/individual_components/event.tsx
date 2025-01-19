@@ -1,13 +1,21 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { CustomEvent } from '../../constants';
+import { CustomEvent, serverLink } from '../../constants';
 import { IoMdArrowRoundBack, IoMdAddCircle, IoMdRemoveCircle } from 'react-icons/io';
-import { FaShoppingCart } from 'react-icons/fa';
+import { FaShoppingCart,FaTrashAlt } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { useCart } from '../Constants/CartContext';
 import { eventFromServer, convertIndividualEventData } from '../../constants';
 import fetchWithAuth from './fetchWithAuth';
 
-const EventDetails: React.FC<{ events: CustomEvent[], myEvents: CustomEvent[] }> = ({ events, myEvents }) => {
+interface eventProps {
+  setUpdateEvent: React.Dispatch<React.SetStateAction<CustomEvent | null>>;
+  setUpdate: React.Dispatch<React.SetStateAction<boolean>>;
+  events: CustomEvent[];
+  myEvents: CustomEvent[]; 
+  update: boolean;
+}
+
+const EventDetails = ({ events, myEvents, update, setUpdate, setUpdateEvent }: eventProps) => {
   const navigate = useNavigate();
   const { eventId } = useParams<{ eventId: string }>();
   const event = events.find((e) => e.link.includes(eventId as string));
@@ -33,7 +41,7 @@ const EventDetails: React.FC<{ events: CustomEvent[], myEvents: CustomEvent[] }>
   const [popup, setPopup] = useState(false)
 
   useEffect(() => {
-    const url = `http://localhost:8080/events/${id}`;
+    const url = `${serverLink}/events/${id}`;
     fetch(url, requestOptions)
       .then((response) => response.json())
       .then((data: eventFromServer) => {
@@ -113,13 +121,12 @@ const EventDetails: React.FC<{ events: CustomEvent[], myEvents: CustomEvent[] }>
       event_id : id
     }
     console.log("Delete Body:", body)
-    const url = "http://localhost:8080/delete_event"
+    const url = `${serverLink}/delete_event?event_id=${id}`
     const options = {
       method: "DELETE",
       headers: { 
         "Content-Type": "application/json" ,
-      },
-      body: JSON.stringify(body),
+      }
     }
     fetchWithAuth(url, options)
     .then((res) => {
@@ -134,19 +141,48 @@ const EventDetails: React.FC<{ events: CustomEvent[], myEvents: CustomEvent[] }>
     navigate("/myevents")
   }
 
+  function UpdateFunc() {
+    if (currentEvent) {
+      console.log("Event on Event Page Details:", currentEvent)
+      setUpdate(true)
+      localStorage.setItem("update", JSON.stringify(update));
+      setUpdateEvent(currentEvent)
+      localStorage.setItem("updateEvent", JSON.stringify(currentEvent));
+      navigate("/create-event")
+    }
+    else {
+      alert("Waiting for event to load.")
+    }
+  }
+
   return (
     <div className="flex justify-center items-start pt-28 transition-opacity ease-in duration-700">
       <div className="xl:max-w-[1280px] w-full px-6">
-        <div className={`flex items-center ${myEvent && 'justify-between'}`}>
+        <div className={`flex items-center ${myEvent && 'sm:justify-between sm:flex-row flex-col'}`}>
           <div className="flex space-x-2 cursor-pointer mb-4" onClick={() => navigate(-1)}>
             <IoMdArrowRoundBack className="text-2xl hover:text-[#e06c7d] text-secondary transition-colors duration-300" />
             <span className="text-secondary_dark font-semibold text-md">Back</span>
           </div>
           {
             myEvent &&
-            <button className="flex cursor-pointer mb-4 bg-secondary_dark rounded-md p-2" onClick={ChangePopup}>
-              <span className="text-white font-semibold text-sm">Delete Event</span>
-            </button>  
+            <div className="grid grid-cols-2 items-center xs:gap-4 gap-1">
+              <div className="flex justify-start">
+                <FaTrashAlt 
+                  className="cursor-pointer text-red-600 hover:text-red-800 text-3xl sm:text-4xl" 
+                  onClick={ChangePopup} 
+                  title="Delete Event" 
+                />
+              </div>
+              <div className="flex justify-end">
+                <button 
+                  className="cursor-pointer bg-secondary_dark hover:bg-secondary_dark_hover rounded-md p-3"
+                  onClick={UpdateFunc}
+                >
+                  <span className="text-white font-semibold text-sm sm:text-base">Update Event</span>
+                </button>
+              </div>
+            </div>
+
           }
         </div>
 
@@ -154,7 +190,7 @@ const EventDetails: React.FC<{ events: CustomEvent[], myEvents: CustomEvent[] }>
         <img src={event.bannerPic} alt={event.name} className="w-full h-[500px] object-cover rounded-lg shadow-md mb-6" />
 
         <div className="bg-white shadow-lg rounded-lg p-6 m-4 hover:shadow-2xl transition-shadow duration-300">
-          <p className="text-secondary_dark mb-6 text-lg">{event.description}</p>
+          <p className="text-secondary_dark mb-6 text-lg">{currentEvent && currentEvent.description}</p>
           
           <div className="mb-4 space-y-2">
             <p className="font-semibold text-gray-700">

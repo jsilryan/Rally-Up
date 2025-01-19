@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { google } from '../../assets'; // Assuming `google` is an SVG import
 import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
+import { serverLink } from '../../constants';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ export default function Login() {
             password: formData.password,
         };
     
-        fetch('http://localhost:8080/login', {
+        fetch(`${serverLink}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -40,9 +41,15 @@ export default function Login() {
                 return res.json();
             })
             .then((data) => {
+                console.log("Token Data:", data)
                 if (data?.access_token && data?.refresh_token) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
                     localStorage.setItem('accessToken', data.access_token);
                     localStorage.setItem('refreshToken', data.refresh_token);
+                    let token: string | null = localStorage.getItem('accessToken');
+                    console.log("New Token:", token)
+                    console.log()
     
                     setShowPopup(true);
                     setFormData({ email: '', password: '' });
