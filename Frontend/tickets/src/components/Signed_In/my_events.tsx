@@ -19,14 +19,6 @@ export default function MyEvents({ events }: MyEventsProps) {
     navigate("/create-event");
   };
 
-  // const url = "http://localhost:8080/my_events";
-  // const requestOptions = {
-  //   method: "GET",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  // };
-
   useEffect(() => {
     if (events.length > 0) {
       setLoading(false)
