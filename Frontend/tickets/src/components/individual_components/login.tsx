@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { google } from '../../assets'; // Assuming `google` is an SVG import
 import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import { serverLink } from '../../constants';
+import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ export default function Login() {
     const [isGooglePopupVisible, setGooglePopupVisible] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
+    const [submitPressed, setPressed] = useState(false)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -19,8 +20,16 @@ export default function Login() {
     };
 
     const handleLogin = () => {
+        if (submitPressed === true) {
+            alert("Wait for response before trying again.")
+            return
+          }
+      
+        setPressed(true)
+        
         if (!formData.email || !formData.password) {
             alert('Please fill in both fields!');
+            setPressed(false)
             return;
         }
     
@@ -36,24 +45,26 @@ export default function Login() {
         })
             .then((res) => {
                 if (!res.ok) {
+                    alert("Server Error. Enter correct Password or email.")
+                    setPressed(false)
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
                 return res.json();
             })
             .then((data) => {
-                console.log("Token Data:", data)
+                // console.log("Token Data:", data)
                 if (data?.access_token && data?.refresh_token) {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
                     localStorage.setItem('accessToken', data.access_token);
                     localStorage.setItem('refreshToken', data.refresh_token);
-                    let token: string | null = localStorage.getItem('accessToken');
-                    console.log("New Token:", token)
+                    // let token: string | null = localStorage.getItem('accessToken');
+                    // console.log("New Token:", token)
                     console.log()
     
                     setShowPopup(true);
                     setFormData({ email: '', password: '' });
-    
+                    setPressed(false)
                     setTimeout(() => {
                         setShowPopup(false);
                         navigate('/myevents');
@@ -63,7 +74,9 @@ export default function Login() {
                 }
             })
             .catch((error) => {
+                alert("Server Error. Enter correct Password or email.")
                 console.error('Error during login:', error);
+                setPressed(false)
             });
     };
     
@@ -120,7 +133,7 @@ export default function Login() {
                     onClick={handleGoogleLogin}
                     className="bg-gray-100 mt-4 w-full flex items-center justify-center p-2 rounded hover:bg-gray-200"
                 >
-                    <img src={google} alt="Google Icon" className="w-6 h-6 mr-2" />
+                    <FcGoogle className="w-6 h-6 mr-2" />
                     Login with Google
                 </button>
 

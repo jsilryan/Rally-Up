@@ -20,10 +20,13 @@ export default function Location({allEvents}: LocProps) {
 
     // Store the latest event for each city
     sortedEvents.forEach((event) => {
+      if (event.name === "Art & Wine Festival") {
+        return; // Skip this event
+      }
       if (!latestEventsByCity[event.location]) {
         latestEventsByCity[event.location] = event;
       }
-    });
+    });    
 
     // Get a random selection of up to 5 cities
     const uniqueEvents = Object.values(latestEventsByCity);
@@ -52,7 +55,7 @@ export default function Location({allEvents}: LocProps) {
             index === currentIndex ? "opacity-100" : "opacity-0"
           }`}
         >
-          <div className="relative flex items-center justify-end h-full rounded-3xl overflow-hidden shadow-2xl">
+          <div className="relative flex items-center justify-end h-full rounded-3xl overflow-hidden shadow-xl">
             {/* Right Image Section with Smooth Transition */}
             <div
               className="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-1000 rounded-3xl"

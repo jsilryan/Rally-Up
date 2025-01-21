@@ -43,6 +43,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
 
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [submitPressed, setPressed] = useState(false)
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -81,8 +82,32 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
   };
 
   const handleSubmit = () => {
+    if (submitPressed === true) {
+      alert("Wait for response before trying again.")
+      return
+    }
+
+    setPressed(true)
+    if (
+      !eventDetails.name || 
+      !eventDetails.startDate || 
+      !eventDetails.endDate || 
+      !eventDetails.startTime || 
+      !eventDetails.endTime || 
+      !eventDetails.bannerPic || 
+      !eventDetails.description ||
+      !city ||
+      !country
+    ) {
+      alert('All fields are required!');
+      setPressed(false);
+      return
+    }  
+
+  
     if (eventDetails.tickets.length === 0) {
       alert("At least one ticket type is required!");
+      setPressed(false);
       return;
     }
 
@@ -104,7 +129,43 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
     if (invalidTickets.length > 0) {
         alert("Some tickets have invalid price or quantity values!");
         console.error("Invalid Tickets:", invalidTickets);
+        setPressed(false);
         return;
+    }
+
+    // Validate startDate and endDate
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set current date to midnight for comparison
+
+    const startDate = new Date(eventDetails.startDate);
+    const endDate = new Date(eventDetails.endDate);
+
+    if (startDate < today) {
+      alert("Start date cannot be today or a past date!");
+      setPressed(false);
+      return;
+    }
+
+    if (endDate < today) {
+      alert("End date cannot be today or a past date!");
+      setPressed(false);
+      return;
+    }
+
+    if (endDate < startDate) {
+      alert("End date cannot be earlier than the start date!");
+      setPressed(false);
+      return;
+    }
+
+    // Now handle the time validation
+    const startTime = new Date(`${eventDetails.startDate}T${eventDetails.startTime}:00`); // Use a fixed date to compare time
+    const endTime = new Date(`${eventDetails.endDate}T${eventDetails.endTime}:00`);
+
+    if (startTime >= endTime) {
+      alert("End time cannot be before start time!");
+      setPressed(false);
+      return;
     }
 
     // Combine city and country into a single location string
@@ -139,6 +200,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
         console.log('Status:', res.status, res.statusText);
         if (!res.ok) {
             throw new Error(`HTTP error! Status: ${res.status}`);
+            setPressed(false)
         }
         return res.text(); // Read response as text
       })
@@ -162,6 +224,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
         });
         setCity("");
         setCountry("");
+        setPressed(false)
         setEventChange(true)
         update && setUpdate(false)
         localStorage.removeItem("update");
@@ -170,6 +233,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
       })
       .catch((error) => {
         console.error(`Error ${update ? "updating" : "creating"} event:`, error);
+        setPressed(false)
         alert(`Failed to ${update ? "update" : "create"} the event. Please try again.`);
       });
   };
@@ -196,28 +260,37 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
       <h1 className="text-2xl font-bold mb-4 text-secondary">{update ? "Update " : "Create " }Event</h1>
       <div className="form w-full max-w-lg bg-white p-6 rounded-md shadow-md">
         {/* All Inputs */}
-        <input
-          type="text"
-          name="name"
-          placeholder="Event Name"
-          value={eventDetails.name}
-          onChange={handleInputChange}
-          className="border w-full p-2 mb-4 rounded"
-        />
-        <input
-          type="text"
-          placeholder="City"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          className="border w-full p-2 mb-4 rounded"
-        />
-        <input
-          type="text"
-          placeholder="Country"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          className="border w-full p-2 mb-4 rounded"
-        />
+        {
+          !update &&
+          <div className="mb-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Event Name"
+              value={eventDetails.name}
+              onChange={handleInputChange}
+              className="border w-full p-2 mb-2 rounded"
+            />
+            <input
+              type="text"
+              placeholder="City"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="border w-full p-2 mb-4 rounded"
+            />
+            <input
+              type="text"
+              placeholder="Country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="border w-full p-2 mb-4 rounded"
+            />
+            <span className="text-sm text-gray-600">
+              Please ensure that the event name, city and country you enter are correct. They cannot be altered once created.
+            </span>
+          </div>
+        }
+        <h4 className="text-gray-600">Start Date</h4>
         <input
           type="date"
           name="startDate"
@@ -226,6 +299,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
           onChange={handleInputChange}
           className="border w-full p-2 mb-4 rounded"
         />
+        <h4 className="text-gray-600">End Date</h4>
         <input
           type="date"
           name="endDate"
@@ -234,6 +308,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
           onChange={handleInputChange}
           className="border w-full p-2 mb-4 rounded"
         />
+        <h4 className="text-gray-600">Start Time</h4>
         <input
           type="time"
           name="startTime"
@@ -242,6 +317,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
           onChange={handleInputChange}
           className="border w-full p-2 mb-4 rounded"
         />
+        <h4 className="text-gray-600">End Time</h4>
         <input
           type="time"
           name="endTime"
@@ -288,7 +364,12 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
         {
           !update &&
           <div>
-            <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
+            <div className="mb-2">
+              <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
+              <span className="text-sm text-gray-600">
+                Please ensure that the details you enter are correct, as they cannot be altered once created.
+              </span>
+            </div>
             {eventDetails.tickets && eventDetails.tickets.map((ticket, index) => (
               <div key={index} className="flex items-center mb-4">
                 <div className="flex xs:flex-row flex-col">
@@ -330,7 +411,7 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
                 )}
               </div>
             ))}
-            
+
             <button
               onClick={handleAddTicket}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"

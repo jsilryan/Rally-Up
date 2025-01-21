@@ -37,8 +37,14 @@ export default function MyEvents({ setMyEvents, eventChange }: MyEventsProps) {
             console.log("My Events Data:", data);
   
             const customEvents = convertEventData(data);
-            setEvents(customEvents);
-            setMyEvents(customEvents)
+            const currentCustomEvents = customEvents.filter((event) => {
+              const eventDate = new Date(event.startDate); // Convert event start date to a Date object
+              const today = new Date(); // Get today's date
+              today.setHours(0, 0, 0, 0); // Normalize to midnight for accurate comparison
+              return eventDate >= today; // Include events from today or later
+            });
+            setEvents(currentCustomEvents);
+            setMyEvents(currentCustomEvents)
             setNoData(true)
             break; // Exit loop on success
           } catch (err) {

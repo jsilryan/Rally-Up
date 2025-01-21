@@ -1,4 +1,4 @@
-import Logo from "./Rally Up logo/2_cropped.png"
+import Logo from "./Rally_Up_Logo/2_cropped.png"
 import img_1 from "./Event_Images/1.jpg"
 import img_2 from "./Event_Images/2.jpg"
 import img_3 from "./Event_Images/3.jpg"

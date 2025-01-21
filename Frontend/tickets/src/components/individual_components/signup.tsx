@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { google } from '../../assets'; // Assuming `google` is an SVG import
+import { FcGoogle } from "react-icons/fc";
 import { FaCheckCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { serverLink } from '../../constants';
@@ -17,6 +17,7 @@ export default function Signup() {
     const [isGooglePopupVisible, setGooglePopupVisible] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const navigate = useNavigate();
+    const [submitPressed, setPressed] = useState(false)
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -29,17 +30,26 @@ export default function Signup() {
     };
 
     const handleSignup = () => {
+        if (submitPressed === true) {
+            alert("Wait for response before trying again.")
+            return
+          }
+      
+        setPressed(true)
+
         const { username, email, phone, firstName, lastName, password, confirmPassword } = formData;
     
         // Check for empty fields
         if (!username || !email || !phone || !firstName || !lastName || !password || !confirmPassword) {
             alert('All fields are required!');
+            setPressed(false)
             return;
         }
     
         // Validate username length
         if (username.length < 8) {
             alert('Username must be 8 characters or longer!');
+            setPressed(false)
             return;
         }
     
@@ -47,17 +57,20 @@ export default function Signup() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation regex
         if (!emailRegex.test(email)) {
             alert('Please enter a valid email address!');
+            setPressed(false)
             return;
         }
     
         // Check password match
         if (password !== confirmPassword) {
             alert('Passwords do not match!');
+            setPressed(false)
             return;
         }
     
         // Validate password strength
         if (!validatePassword(password)) {
+            setPressed(false)
             alert(
                 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
             );
@@ -103,9 +116,11 @@ export default function Signup() {
                             console.error("Failed to retrieve accessToken from localStorage");
                         }
                     }, 200);
-                    
+                   
                 } else {
                     console.error("Invalid data object or missing tokens:", data);
+                    alert("Server error. Retry signup")
+                    
                 }
                     
                 // Show success popup
@@ -116,6 +131,7 @@ export default function Signup() {
                     setShowPopup(false);
                     navigate('/myevents');
                 }, 3000);
+                setPressed(false)
 
                 // Clear form
                 setFormData({
@@ -131,6 +147,7 @@ export default function Signup() {
           .catch((err) => {
             console.log(err)
             alert(err)
+            setPressed(false)
           });
     
     };
@@ -227,7 +244,7 @@ export default function Signup() {
                     onClick={handleGoogleSignup}
                     className="bg-gray-100 mt-4 w-full flex items-center justify-center p-2 rounded hover:bg-gray-200"
                 >
-                    <img src={google} alt="Google Icon" className="w-6 h-6 mr-2" />
+                    <FcGoogle className="w-6 h-6 mr-2" />
                     Sign Up with Google
                 </button>
 

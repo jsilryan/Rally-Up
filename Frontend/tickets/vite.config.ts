@@ -8,5 +8,8 @@ export default defineConfig({
     alias: {
       'jwt-decode': '/node_modules/jwt-decode',
     },
-  }  
+  },
+  server: {
+    host: '0.0.0.0', // Bind to all interfaces
+  },
 })

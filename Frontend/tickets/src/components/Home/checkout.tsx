@@ -12,6 +12,7 @@ const Checkout: React.FC<Props> = ({events}) => {
   const [showMpesaInput, setShowMpesaInput] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isValidNumber, setIsValidNumber] = useState(false);
+  const [submitPressed, setPressed] = useState(false)
 
   console.log("Cart:", cart)
 
@@ -32,11 +33,19 @@ const Checkout: React.FC<Props> = ({events}) => {
   };
 
   const handlePurchase = () => {
+    if (submitPressed === true) {
+      alert("Wait for response before trying again.")
+      return
+    }
+
+    setPressed(true)
+
     if (isValidNumber) {
       alert('Thank you for your purchase!');
       // Payment logic
       console.log(cart)
       clearCart()
+      setPressed(false)     
     }
   };
   useEffect (() => {
