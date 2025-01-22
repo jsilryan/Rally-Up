@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useCart, CartItem } from '../Constants/CartContext';
-import { CustomEvent } from "../../constants";
+import { CustomEvent, serverLink } from "../../constants";
 import { Link } from 'react-router-dom';
+import fetchWithAuth from '../individual_components/fetchWithAuth';
 
 interface Props {
     events: CustomEvent[]
@@ -10,8 +11,12 @@ interface Props {
 const Checkout: React.FC<Props> = ({events}) => {
   const { cart, clearCart } = useCart();
   const [showMpesaInput, setShowMpesaInput] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [personalData, setPersonalData] = useState({
+    phoneNumber: "",
+    email: ""
+  })
   const [isValidNumber, setIsValidNumber] = useState(false);
+  const [isValidEmail, setIsValidEmail] = useState(false);
   const [submitPressed, setPressed] = useState(false)
 
   console.log("Cart:", cart)
@@ -22,14 +27,27 @@ const Checkout: React.FC<Props> = ({events}) => {
     return total + ticketValues.reduce((subTotal, ticket) => subTotal + ticket.count * ticket.price, 0);
   }, 0);
 
+ 
   // Function to handle phone number input change
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setPhoneNumber(value);
-
-    // Validate that the phone number starts with 1 or 7 and is exactly 9 digits long
-    const isValid = /^[17]\d{8}$/.test(value);
+    const isValid = /^[17]\d{8}$/.test(value); // Validate phone number
+    setPersonalData((prev) => ({
+      ...prev,
+      phoneNumber: value,
+    }));
     setIsValidNumber(isValid);
+  };
+
+  // Function to handle email input change
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); // Basic email validation
+    setPersonalData((prev) => ({
+      ...prev,
+      email: value,
+    }));
+    setIsValidEmail(isValid);
   };
 
   const handlePurchase = () => {
@@ -40,12 +58,58 @@ const Checkout: React.FC<Props> = ({events}) => {
 
     setPressed(true)
 
-    if (isValidNumber) {
-      alert('Thank you for your purchase!');
-      // Payment logic
-      console.log(cart)
-      clearCart()
-      setPressed(false)     
+    const body = {
+      cartEvents: cart,
+      total: totalPrice,
+      email: personalData.email,
+      phone: personalData.phoneNumber
+    }
+
+    console.log("Checkout body:", body)
+
+    if (isValidNumber && isValidEmail) {
+      const url = `${serverLink}/generate_ticket` 
+      const options = {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json" ,
+        },
+        body: JSON.stringify(body),
+      }
+      console.log(url, options)
+
+      fetchWithAuth(url, options)
+        .then((res) => {
+          console.log('Status:', res.status, res.statusText);
+          if (!res.ok) {
+            setPressed(false)
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          return res.text(); // Read response as text
+        })
+        .then((data) => {
+          console.log("Response from server:", data);
+          // Reset form fields
+          setPersonalData({
+            phoneNumber: "",
+            email: ""
+          })
+          alert('Thank you for your purchase. Check your email for the tickets.');
+          // Payment logic
+          console.log(cart)
+          clearCart()
+          setPressed(false)    
+        })
+        .catch((error) => {
+          console.error(`Error purchasing tickets:`, error);
+          setPressed(false)
+          alert(`Failed to purchase tickets, please retry.`);
+        }); 
+    }
+
+    else {
+      alert("Confirm phone number and email details.")
+      setPressed(false)
     }
   };
   useEffect (() => {
@@ -114,26 +178,45 @@ const Checkout: React.FC<Props> = ({events}) => {
             {showMpesaInput && (
               <div className="mt-6 border-t pt-4">
                 <h3 className="text-xl font-semibold text-secondary mb-4">M-Pesa Payment</h3>
+                
+                {/* Phone Number Input */}
                 <div className="flex items-center space-x-2 mb-4">
                   <span className="font-semibold text-lg">+254</span>
                   <input
                     type="tel"
-                    value={phoneNumber}
+                    value={personalData.phoneNumber}
                     onChange={handlePhoneNumberChange}
                     placeholder="712345678"
                     maxLength={9}
                     className="border border-gray-300 rounded-md p-2 w-48 focus:outline-none focus:border-secondary"
                   />
                 </div>
-                {!isValidNumber && phoneNumber.length > 0 && (
-                  <p className="text-red-500">Please enter a valid phone number starting with 1 or 7 (9 digits total).</p>
+                {!isValidNumber && personalData.phoneNumber.length > 0 && (
+                  <p className="text-red-500">
+                    Please enter a valid phone number starting with 1 or 7 (9 digits total).
+                  </p>
                 )}
 
+                {/* Email Input */}
+                <div className="mb-4">
+                  <input
+                    type="email"
+                    value={personalData.email}
+                    onChange={handleEmailChange}
+                    placeholder="Enter your email"
+                    className="border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:border-secondary"
+                  />
+                </div>
+                {!isValidEmail && personalData.email.length > 0 && (
+                  <p className="text-red-500">Please enter a valid email address.</p>
+                )}
+
+                {/* Purchase Button */}
                 <button
                   onClick={handlePurchase}
-                  disabled={!isValidNumber}
+                  disabled={!isValidNumber || !isValidEmail}
                   className={`mt-4 py-2 px-6 rounded-lg ${
-                    isValidNumber ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-400 cursor-not-allowed'
+                    isValidNumber && isValidEmail ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-gray-400 cursor-not-allowed"
                   }`}
                 >
                   Purchase

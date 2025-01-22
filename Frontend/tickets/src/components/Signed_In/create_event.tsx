@@ -199,8 +199,8 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
       .then((res) => {
         console.log('Status:', res.status, res.statusText);
         if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
-            setPressed(false)
+          setPressed(false)
+          throw new Error(`HTTP error! Status: ${res.status}`);
         }
         return res.text(); // Read response as text
       })
@@ -362,63 +362,77 @@ export default function CreateEvent({setEventChange, setUpdate, update, event}: 
 
         {/* Ticket Details */}
         {
-          !update &&
-          <div>
-            <div className="mb-2">
-              <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
-              <span className="text-sm text-gray-600">
-                Please ensure that the details you enter are correct, as they cannot be altered once created.
-              </span>
-            </div>
-            {eventDetails.tickets && eventDetails.tickets.map((ticket, index) => (
-              <div key={index} className="flex items-center mb-4">
-                <div className="flex xs:flex-row flex-col">
-                  <input
-                    type="text"
-                    placeholder="Ticket Type"
-                    value={ticket.name}
-                    onChange={(e) =>
-                      handleTicketChange(index, "name", e.target.value)
-                    }
-                    className="border p-2 flex-1 xs:mr-2 rounded"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Quantity"
-                    value={ticket.quantity}
-                    onChange={(e) =>
-                      handleTicketChange(index, "quantity", parseFloat(e.target.value))
-                    }
-                    className="border p-2 w-20 rounded xs:mt-0 mt-2 xs:mr-2 "
-                  />
-                  <input
-                    type="number"
-                    placeholder="Price"
-                    value={ticket.price}
-                    onChange={(e) =>
-                      handleTicketChange(index, "price", parseFloat(e.target.value))
-                    }
-                    className="border p-2 w-20 rounded xs:mt-0 mt-2"
-                  />
-                </div>
-                {index > 0 && (
-                  <button
-                    onClick={() => handleDeleteTicket(index)}
-                    className="text-red-500 hover:text-red-600 ml-2"
-                  >
-                    <FaTrashAlt />
-                  </button>
-                )}
+          !update && (
+            <div>
+              <div className="mb-2">
+                <h3 className="text-lg font-semibold mb-2">Ticket Details</h3>
+                <span className="text-sm text-gray-600">
+                  Please ensure that the details you enter are correct, as they cannot be altered once created.
+                </span>
               </div>
-            ))}
 
-            <button
-              onClick={handleAddTicket}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
-            >
-              Add Ticket
-            </button>
-          </div>
+              {/* Header Row */}
+              {eventDetails.tickets && eventDetails.tickets.length > 0 && (
+                <div className="flex items-center mb-2 font-semibold text-gray-700">
+                  <div className="flex xs:flex-row flex-col w-full">
+                    <div className="flex-1 xs:mr-2 text-center">Ticket Type</div>
+                    <div className="w-20 xs:mr-2 text-center">Quantity</div>
+                    <div className="w-20 text-center">Price</div>
+                  </div>
+                </div>
+              )}
+
+              {eventDetails.tickets &&
+                eventDetails.tickets.map((ticket, index) => (
+                  <div key={index} className="flex items-center mb-4">
+                    <div className="flex xs:flex-row flex-col w-full">
+                      <input
+                        type="text"
+                        placeholder="Ticket Type"
+                        value={ticket.name}
+                        onChange={(e) =>
+                          handleTicketChange(index, "name", e.target.value)
+                        }
+                        className="border p-2 flex-1 xs:mr-2 rounded"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Quantity"
+                        value={ticket.quantity}
+                        onChange={(e) =>
+                          handleTicketChange(index, "quantity", parseFloat(e.target.value))
+                        }
+                        className="border p-2 w-20 rounded xs:mt-0 mt-2 xs:mr-2"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Price"
+                        value={ticket.price}
+                        onChange={(e) =>
+                          handleTicketChange(index, "price", parseFloat(e.target.value))
+                        }
+                        className="border p-2 w-20 rounded xs:mt-0 mt-2"
+                      />
+                    </div>
+                    {index > 0 && (
+                      <button
+                        onClick={() => handleDeleteTicket(index)}
+                        className="text-red-500 hover:text-red-600 ml-2"
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+              <button
+                onClick={handleAddTicket}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
+              >
+                Add Ticket
+              </button>
+            </div>
+          )
         }
 
         <button
