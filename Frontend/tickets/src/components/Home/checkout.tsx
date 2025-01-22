@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useCart, CartItem } from '../Constants/CartContext';
 import { CustomEvent, serverLink } from "../../constants";
 import { Link } from 'react-router-dom';
-import fetchWithAuth from '../individual_components/fetchWithAuth';
 
 interface Props {
     events: CustomEvent[]
@@ -58,8 +57,25 @@ const Checkout: React.FC<Props> = ({events}) => {
 
     setPressed(true)
 
+    // Convert the cart format
+    const newCartEvents = cart.map(event => {
+      const { eventId, tickets } = event;
+
+      // Convert tickets from object to array
+      const formattedTickets = Object.entries(tickets).map(([type, details]) => ({
+        type,
+        quantity: details.count,
+        price: details.price
+      }));
+
+      return {
+        eventID: eventId,
+        tickets: formattedTickets
+      };
+    });
+
     const body = {
-      cartEvents: cart,
+      cartEvents: newCartEvents,
       total: totalPrice,
       email: personalData.email,
       phone: personalData.phoneNumber
@@ -78,7 +94,7 @@ const Checkout: React.FC<Props> = ({events}) => {
       }
       console.log(url, options)
 
-      fetchWithAuth(url, options)
+      fetch(url, options)
         .then((res) => {
           console.log('Status:', res.status, res.statusText);
           if (!res.ok) {
@@ -105,6 +121,9 @@ const Checkout: React.FC<Props> = ({events}) => {
           setPressed(false)
           alert(`Failed to purchase tickets, please retry.`);
         }); 
+        alert('Thank you for your purchase. Check your email for the tickets.');
+        clearCart()
+        setPressed(false)   
     }
 
     else {

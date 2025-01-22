@@ -95,6 +95,7 @@ export default function Location({allEvents}: LocProps) {
                 </span> */}
 
                 {/* Button for viewing or purchasing ticket */}
+                {/* <Link to={`/events/${filteredEvents && index === filteredEvents.length - 1 ? filteredEvents[0].link.split('/').pop() : index === 0 ? filteredEvents[-1].link.split('/').pop() : filteredEvents[index-1].link.split('/').pop()}`}></Link> */}
                 <Link to={`/events/${event.link.split('/').pop()}`}>
                   <button
                     className="mt-4 px-6 py-2 bg-secondary text-white rounded-xl hover:bg-[#e06c7d] transition-all duration-300"
