@@ -1,0 +1,31 @@
+services:
+  web_server:
+    image: eugenewainaina/ktor-server-ticketing-system:v7
+    ports:
+      - "8080:8080"
+    container_name: backend_kotlin
+    env_file:
+      - .env
+    environment:
+      - KTOR_ENV=production
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}
+    networks:
+      - app-network
+    volumes:
+      - tokens_volume:/app/tokens
+
+
+  frontend:
+    image: jsilryan/tickets:v4
+    container_name: frontend_react
+    ports:
+      - "4173:80"
+    networks:
+      - app-network
+
+volumes:
+  tokens_volume:
+
+networks:
+  app-network:
+    driver: bridge

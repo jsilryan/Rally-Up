@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCart, CartItem } from '../Constants/CartContext';
-import { CustomEvent, serverLink } from "../../constants";
+import { CustomEvent, serverLink, mpesaServer, mpesaData } from "../../constants";
 import { Link } from 'react-router-dom';
 
 interface Props {
@@ -49,6 +49,34 @@ const Checkout: React.FC<Props> = ({events}) => {
     setIsValidEmail(isValid);
   };
 
+  const mpesaTransaction = async () => {
+    const mpesaBody = {
+      LNM_PHONE_NUMBER: '0'+personalData.phoneNumber,
+      total_amount: totalPrice > 5 ? 1 : totalPrice
+    }
+    console.log("Mpesa Body", mpesaBody)
+    const mpesaUrl = `${mpesaServer}/stk_push/callback/`
+    const mpesaOptions = {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json" ,
+      },
+      body: JSON.stringify(mpesaBody),
+    }
+
+    const response = await fetch(mpesaUrl, mpesaOptions)
+    
+    if (!response.ok) {
+      alert("Error with MPesa transaction, please try again.")
+      setPressed(false)
+      throw new Error(`Error: ${response.status}`);
+    }
+    const data: mpesaData = await response.json();
+    console.log("MPesa Response:", data);
+
+    return data.status
+  }
+
   const handlePurchase = () => {
     if (submitPressed === true) {
       alert("Wait for response before trying again.")
@@ -84,53 +112,62 @@ const Checkout: React.FC<Props> = ({events}) => {
     console.log("Checkout body:", body)
 
     if (isValidNumber && isValidEmail) {
-      const url = `${serverLink}/generate_ticket` 
-      const options = {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json" ,
-        },
-        body: JSON.stringify(body),
-      }
-      console.log(url, options)
-
-      fetch(url, options)
-        .then((res) => {
-          console.log('Status:', res.status, res.statusText);
-          if (!res.ok) {
-            setPressed(false)
-            throw new Error(`HTTP error! Status: ${res.status}`);
+      mpesaTransaction()
+      .then ((mpesaStatus) => {
+        if (mpesaStatus === "success") {
+          const url = `${serverLink}/generate_ticket` 
+          const options = {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json" ,
+            },
+            body: JSON.stringify(body),
           }
-          return res.text(); // Read response as text
-        })
-        .then((data) => {
-          console.log("Response from server:", data);
-          // Reset form fields
-          setPersonalData({
-            phoneNumber: "",
-            email: ""
-          })
-          alert('Thank you for your purchase. Check your email for the tickets.');
-          // Payment logic
-          console.log(cart)
-          clearCart()
-          setPressed(false)    
-        })
-        .catch((error) => {
-          console.error(`Error purchasing tickets:`, error);
+          console.log(url, options)
+    
+          fetch(url, options)
+            .then((res) => {
+              console.log('Status:', res.status, res.statusText);
+              if (!res.ok) {
+                setPressed(false)
+                throw new Error(`HTTP error! Status: ${res.status}`);
+              }
+              return res.text(); // Read response as text
+            })
+            .then((data) => {
+              console.log("Response from server:", data);
+              // Reset form fields
+              setPersonalData({
+                phoneNumber: "",
+                email: ""
+              })
+              alert('Thank you for your purchase. Check your email for the tickets.');
+              // Payment logic
+              console.log(cart)
+              clearCart()
+              setPressed(false)    
+            })
+            .catch((error) => {
+              console.error(`Error purchasing tickets:`, error);
+              setPressed(false)
+              alert(`Failed to purchase tickets, please retry.`);
+            }); 
+            // alert('Thank you for your purchase. Check your email for the tickets.');
+            // clearCart()
+            // setPressed(false)
+        }
+        else {
+          alert("Issue with MPesa transaction, please try again.")
           setPressed(false)
-          alert(`Failed to purchase tickets, please retry.`);
-        }); 
-        alert('Thank you for your purchase. Check your email for the tickets.');
-        clearCart()
-        setPressed(false)   
+        }  
+      })
     }
-
     else {
       alert("Confirm phone number and email details.")
       setPressed(false)
     }
   };
+
   useEffect (() => {
     const isCartEmpty = cart.length === 0 || cart.every((item) => Object.keys(item.tickets).length === 0);
     if (isCartEmpty) {

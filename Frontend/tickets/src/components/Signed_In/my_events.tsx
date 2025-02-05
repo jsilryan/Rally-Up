@@ -20,7 +20,7 @@ export default function MyEvents({ setMyEvents, eventChange }: MyEventsProps) {
         const requestOptions_my_events = {
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json", 
           },
         };
         let retryCount = 0;
