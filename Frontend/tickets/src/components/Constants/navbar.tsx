@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, Link } from "react-router-dom"; // Import useLocation and Link
 import { Logo } from "../../assets";
 import SearchBar from "./search";
@@ -24,10 +24,6 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
   const location = useLocation(); // Get the current location
   const isHomePage = location.pathname === "/"; // Check if the current path is home "/"
   const navigate = useNavigate(); // Call useNavigate inside the React component
-
-  useEffect(() => {
-
-  })
 
   const handleFilteredEvents = (filtered: CustomEvent[]) => {
     onFilteredEvents(filtered); // Update the filtered events in the parent component
@@ -168,7 +164,7 @@ export default function Navbar({ onFilteredEvents, filteredEvents, allEvents, to
               <ul className="list-none flex flex-col justify-center flex-1">
                 {
                   !isAuthenticated() ?
-                  navLinks.map((nav, index) => (
+                    navLinks.map((nav, index) => (
                       <div>
                           <li key = {index} 
                             className={`
